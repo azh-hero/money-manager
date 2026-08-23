@@ -527,7 +527,7 @@ const semuaTerpilih = s => s.size === PROFIL.length
 
 // ==================== OVERVIEW ====================
 const JAM = 3600000, HARI = 86400000
-let metrikAktif = 'pengeluaran', grafik = null, barisOverview = []
+let metrikAktif = 'pengeluaran', grafik = null, barisOverview = [], saldoAwal = {}
 
 function infoPeriode(k) {
   const kini = new Date(), awal = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate())
@@ -589,6 +589,11 @@ async function muatOverview() {
     document.getElementById('kAset').textContent         = 'Rp ' + rupiah(Number(s.saldo_total) + Number(s.tabungan))
   }
 
+  const { data: awalData } = await supabase.rpc('saldo_sebelum', {
+    p_waktu: p.mulai.toISOString(), p_users: users })
+  saldoAwal = {}
+  ;(awalData || []).forEach(r => { saldoAwal[r.user_id] = Number(r.saldo) || 0 })
+
   try {
     barisOverview = await ambilSemua(() => {
       let q = supabase.from('transaction_ledger')
@@ -610,7 +615,9 @@ function gambarGrafik(p) {
   const n = awalBucket.length
   const total = new Array(n).fill(0)
 
-  const idUser = [...new Set(barisOverview.map(r => r.user_id))].slice(0, 6)
+  // Garis mengikuti pengguna yang dicentang, bukan yang kebetulan punya transaksi,
+  // supaya pemilik saldo tanpa transaksi di periode ini tetap tergambar mendatar.
+  const idUser = (semuaTerpilih(userOv) ? PROFIL.map(x => x.id) : arr(userOv)).slice(0, 6)
   const perUser = {}; idUser.forEach(u => perUser[u] = new Array(n).fill(0))
 
   barisOverview.forEach(r => {
@@ -621,13 +628,21 @@ function gambarGrafik(p) {
     if (perUser[r.user_id]) perUser[r.user_id][i] += v
   })
 
+  // Tab Saldo menampilkan saldo sesungguhnya di tiap titik waktu, bukan perubahannya.
+  // Karena itu dimulai dari saldo sebelum periode, lalu titik tanpa transaksi
+  // mempertahankan nilai sebelumnya.
   if (metrikAktif === 'saldo') {
-    let j = 0; for (let i = 0; i < n; i++) { j += total[i]; total[i] = j }
-    idUser.forEach(u => { let a = 0; for (let i = 0; i < n; i++) { a += perUser[u][i]; perUser[u][i] = a } })
+    let j = idUser.reduce((a, u) => a + (saldoAwal[u] || 0), 0)
+    for (let i = 0; i < n; i++) { j += total[i]; total[i] = j }
+    idUser.forEach(u => {
+      let a = saldoAwal[u] || 0
+      for (let i = 0; i < n; i++) { a += perUser[u][i]; perUser[u][i] = a }
+    })
   }
 
   const dataset = [{
-    type:'bar', label:'Total pengguna terpilih', data:total, backgroundColor:'#D4D4D4', borderWidth:0,
+    type:'bar', label:'Total pengguna terpilih', data:total,
+    backgroundColor:'#F5F5F5', hoverBackgroundColor:'#303030', borderWidth:0,
     borderRadius:{ topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 }, borderSkipped:'bottom', order:2
   }].concat(idUser.map(u => ({
     type:'line', label:(PROFIL.find(x => x.id === u) || {}).nama || '—',
@@ -640,14 +655,22 @@ function gambarGrafik(p) {
     data: { labels: label, datasets: dataset },
     options: {
       responsive:true, maintainAspectRatio:false,
+      // touchstart & touchmove disertakan agar batang ikut menyala saat disentuh di HP.
+      events:['mousemove','mouseout','click','touchstart','touchmove'],
       interaction:{ mode:'index', intersect:false },
       plugins:{
-        legend:{ labels:{ font:{size:11}, boxWidth:12, usePointStyle:true } },
+        legend:{ labels:{
+          font:{size:11}, boxWidth:12, usePointStyle:true,
+          // Kotak batang diberi garis tepi tipis, karena #F5F5F5 tidak terlihat di latar putih.
+          generateLabels: bagan => Chart.defaults.plugins.legend.labels.generateLabels(bagan)
+            .map(l => l.datasetIndex === 0
+              ? Object.assign(l, { strokeStyle:'#E5E5E5', lineWidth:1 }) : l)
+        }},
         tooltip:{ callbacks:{ label: c => c.dataset.label + ': Rp ' + rupiah(c.parsed.y) } }
       },
       scales:{
         x:{ grid:{ display:false }, ticks:{ font:{size:10}, maxRotation:0, autoSkip:true, maxTicksLimit:12 } },
-        y:{ beginAtZero:true, ticks:{ font:{size:10}, callback:v => rupiah(v) },
+        y:{ beginAtZero: metrikAktif !== 'saldo', ticks:{ font:{size:10}, callback:v => rupiah(v) },
             border:{ dash:[3,3], display:false }, grid:{ color:'#E5E5E5' } }
       }
     }

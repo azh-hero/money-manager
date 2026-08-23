@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Money Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    select:focus, input:focus { outline: 2px solid #A1A1A1; outline-offset: 1px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="bg-neutral-50 min-h-screen">
+
+<!-- TOP BAR -->
+<header class="bg-white border-b border-neutral-200">
+  <div class="flex items-center gap-3 px-5 py-3.5 md:px-8">
+    <a href="app.html" class="md:hidden" aria-label="Kembali">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </a>
+    <div class="hidden md:flex items-center gap-3">
+      <div class="bg-neutral-100 rounded-full px-3 py-2">
+        <span id="avatar" class="text-[13px] font-semibold text-neutral-700">–</span>
+      </div>
+      <div>
+        <p id="barNama" class="text-sm font-semibold text-neutral-950">…</p>
+        <p id="barRole" class="text-xs text-neutral-500">…</p>
+      </div>
+    </div>
+    <h1 class="md:hidden flex-1 text-base font-semibold text-neutral-950">Dashboard</h1>
+    <div class="hidden md:block flex-1"></div>
+    <a href="users.html" class="hidden md:block rounded-lg px-3 py-1.5 text-sm text-neutral-500">User Setting</a>
+    <a href="app.html" class="hidden md:block rounded-lg border border-neutral-200 px-3 py-2 text-[13px] font-medium text-neutral-950">Catat transaksi</a>
+  </div>
+
+  <!-- TAB -->
+  <div class="flex gap-1 px-4 md:px-8 -mb-px">
+    <button data-tab="overview" class="tabBtn px-4 py-2.5 text-sm font-semibold text-neutral-950 border-b-2 border-neutral-900">Overview</button>
+    <button data-tab="riwayat" class="tabBtn px-4 py-2.5 text-sm font-medium text-neutral-500 border-b-2 border-transparent">Riwayat Transaksi</button>
+  </div>
+</header>
+
+<main class="px-4 py-5 md:px-8 md:py-7">
+
+<!-- ==================== TAB OVERVIEW ==================== -->
+<section id="tabOverview">
+
+  <div class="md:flex md:items-center md:gap-4">
+    <div class="flex-1">
+      <h2 class="hidden md:block text-[26px] font-bold text-neutral-950">Overview</h2>
+      <p class="hidden md:block text-sm text-neutral-500 mt-0.5">Ringkasan aktivitas keuangan pada periode terpilih.</p>
+    </div>
+    <select id="periode" class="w-full md:w-auto rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+      <option value="hari">Hari ini</option>
+      <option value="7hari">7 hari terakhir</option>
+      <option value="bulan">Bulan berjalan</option>
+      <option value="30hari" selected>30 hari terakhir</option>
+      <option value="90hari">90 hari terakhir</option>
+      <option value="tahun">Tahun berjalan</option>
+      <option value="setahun">Setahun ke belakang</option>
+    </select>
+  </div>
+
+  <!-- Kartu ringkas -->
+  <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
+      <p class="text-[11px] font-medium text-neutral-500">Saldo cash</p>
+      <p id="kSaldoCash" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
+      <p class="text-[11px] font-medium text-neutral-500">Saldo virtual</p>
+      <p id="kSaldoVirtual" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
+      <p class="text-[11px] font-medium text-neutral-500">Total saldo</p>
+      <p id="kSaldoTotal" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
+      <p class="text-[11px] font-medium text-neutral-500">Total tabungan</p>
+      <p id="kTabungan" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+  </div>
+
+  <!-- Grafik -->
+  <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 md:p-5">
+    <div class="flex items-baseline gap-2">
+      <p class="flex-1 text-sm font-semibold text-neutral-950">Transaksi berdasarkan waktu</p>
+      <p id="labelSumbu" class="text-[11px] text-neutral-400"></p>
+    </div>
+    <p class="text-[11px] text-neutral-400 mt-0.5">Batang: nilai pemasukan &amp; pengeluaran. Garis: jumlah transaksi per pengguna.</p>
+    <div class="mt-3 h-64 md:h-80">
+      <canvas id="grafik"></canvas>
+    </div>
+  </div>
+
+  <!-- Highlight -->
+  <div class="mt-4 grid md:grid-cols-2 gap-3">
+    <div class="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+      <p class="px-4 py-2.5 text-sm font-semibold text-neutral-950 bg-neutral-50 border-b border-neutral-200">Pengeluaran</p>
+      <div id="highlightKeluar"></div>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+      <p class="px-4 py-2.5 text-sm font-semibold text-neutral-950 bg-neutral-50 border-b border-neutral-200">Pemasukan</p>
+      <div id="highlightMasuk"></div>
+    </div>
+  </div>
+
+  <!-- Tabel pengguna -->
+  <div class="mt-4 rounded-xl border border-neutral-200 bg-white overflow-hidden">
+    <div class="px-4 py-2.5 bg-neutral-50 border-b border-neutral-200">
+      <p class="text-sm font-semibold text-neutral-950">Ringkasan per pengguna</p>
+      <p class="text-[11px] text-neutral-400 mt-0.5">Kolom balance dan tabungan bersifat kumulatif sejak awal, bukan per periode.</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[980px]">
+        <thead>
+          <tr class="border-b border-neutral-200">
+            <th class="text-left px-4 py-2.5 text-xs font-semibold text-neutral-700">Nama</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Total pengeluaran</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Total pemasukan</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Pengeluaran terbesar</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Pemasukan terbesar</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Cash</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Virtual</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Total balance</th>
+            <th class="text-right px-4 py-2.5 text-xs font-semibold text-neutral-700">Tabungan</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyPengguna"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== TAB RIWAYAT ==================== -->
+<section id="tabRiwayat" class="hidden">
+
+  <div class="md:flex md:items-center md:gap-4">
+    <div class="flex-1">
+      <h2 class="hidden md:block text-[26px] font-bold text-neutral-950">Riwayat Transaksi</h2>
+      <p class="hidden md:block text-sm text-neutral-500 mt-0.5">Seluruh pencatatan pemasukan dan pengeluaran.</p>
+    </div>
+    <div class="flex gap-2">
+      <button id="exportCsv" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+        CSV
+      </button>
+      <button id="exportXlsx" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+        Excel
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-5 md:py-4">
+      <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo cash</p>
+      <p id="saldoCash" class="text-base md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-5 md:py-4">
+      <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo virtual</p>
+      <p id="saldoVirtual" class="text-base md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+    <div class="col-span-2 md:col-span-1 rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-5 md:py-4">
+      <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Total saldo</p>
+      <p id="saldoTotal" class="text-base md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+  </div>
+
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    <span class="hidden md:inline text-[13px] font-medium text-neutral-500">Filter:</span>
+    <select id="filterUser" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
+      <option value="">Semua user</option>
+    </select>
+    <select id="filterKategori" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
+      <option value="">Semua kategori</option>
+      <option value="income">Income</option>
+      <option value="setor_tunai">Setor tunai</option>
+      <option value="ambil_tabungan">Ambil tabungan</option>
+      <option value="roi">ROI</option>
+      <option value="expenses">Expenses</option>
+      <option value="tarik_tunai">Tarik tunai</option>
+      <option value="menabung">Menabung</option>
+      <option value="capex">Capex</option>
+    </select>
+    <select id="filterJenis" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
+      <option value="">Semua jenis</option>
+      <option value="cash">Cash</option>
+      <option value="virtual">Virtual</option>
+    </select>
+    <select id="sortMobile" class="md:hidden rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
+      <option value="occurred_at|false">Terbaru</option>
+      <option value="occurred_at|true">Terlama</option>
+      <option value="debit|false">Debit terbesar</option>
+      <option value="debit|true">Debit terkecil</option>
+      <option value="credit|false">Kredit terbesar</option>
+      <option value="credit|true">Kredit terkecil</option>
+    </select>
+    <div class="flex-1"></div>
+    <span class="hidden md:inline text-[13px] text-neutral-500">Tampilkan</span>
+    <select id="jumlahTampil" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
+      <option value="50">50</option><option value="75">75</option>
+      <option value="100">100</option><option value="150">150</option>
+      <option value="200">200</option>
+    </select>
+  </div>
+
+  <div class="hidden md:block mt-5 rounded-xl border border-neutral-200 bg-white overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[1100px]">
+        <thead>
+          <tr class="bg-neutral-50 border-b border-neutral-200">
+            <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-700">
+              <button class="sortBtn inline-flex items-center gap-1" data-kolom="occurred_at">Tanggal &amp; Waktu <span class="text-neutral-400">⇅</span></button>
+            </th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-700">User</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-700">Nama transaksi</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-700">Kategori</th>
+            <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-700">
+              <button class="sortBtn inline-flex items-center gap-1" data-kolom="debit">Debit <span class="text-neutral-400">⇅</span></button>
+            </th>
+            <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-700">
+              <button class="sortBtn inline-flex items-center gap-1" data-kolom="credit">Kredit <span class="text-neutral-400">⇅</span></button>
+            </th>
+            <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-700">Saldo cash</th>
+            <th class="text-right px-4 py-3 text-xs font-semibold text-neutral-700">Saldo virtual</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-neutral-700">Jenis</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody id="tbodyTabel"></tbody>
+      </table>
+    </div>
+    <div class="bg-neutral-50 border-t border-neutral-200 px-4 py-3">
+      <p id="infoJumlah" class="text-xs text-neutral-500">…</p>
+    </div>
+  </div>
+
+  <div id="daftarKartu" class="md:hidden mt-4 space-y-2.5"></div>
+  <p id="infoJumlahMobile" class="md:hidden mt-4 text-xs text-neutral-500"></p>
+</section>
+
+</main>
+
+<!-- MODAL AKSI -->
+<div id="modalAksi" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center bg-neutral-950/50">
+  <div class="w-full md:max-w-sm bg-white rounded-t-2xl md:rounded-xl p-5">
+    <p class="text-[17px] font-semibold text-neutral-950">Aksi transaksi</p>
+    <p id="modalNama" class="text-sm text-neutral-500 mt-1"></p>
+    <div id="modalPeringatan" class="hidden mt-3 rounded-[10px] border border-orange-200 bg-orange-50 px-3.5 py-2.5">
+      <p class="text-xs text-orange-800">Transaksi ini punya baris pasangan. Tindakan ini otomatis berlaku untuk keduanya.</p>
+    </div>
+    <div class="mt-4 space-y-2">
+      <button id="aksiNonaktif" class="w-full rounded-lg border border-neutral-200 bg-white py-3 text-[15px] font-medium text-neutral-950">Nonaktifkan</button>
+      <button id="aksiHapus" class="w-full rounded-lg border border-red-200 bg-white py-3 text-[15px] font-medium text-red-700">Hapus</button>
+      <button id="aksiBatal" class="w-full rounded-lg bg-neutral-100 py-3 text-[15px] font-medium text-neutral-950">Batal</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase, requireDashboardAccess, rupiah, initials } from './config.js'
+
+const profile = await requireDashboardAccess()
+if (!profile) throw new Error('tidak berhak')
+
+document.getElementById('avatar').textContent  = initials(profile.nama)
+document.getElementById('barNama').textContent = profile.nama
+document.getElementById('barRole').textContent = profile.role === 'superadmin' ? 'Superadmin' : 'Admin'
+
+const LABEL_KATEGORI = {
+  income:'Income', setor_tunai:'Setor tunai', ambil_tabungan:'Ambil tabungan', roi:'ROI',
+  expenses:'Expenses', tarik_tunai:'Tarik tunai', menabung:'Menabung', capex:'Capex'
+}
+const LABEL_METODE = { qris:'QRIS', transfer:'Transfer' }
+
+function tanggalTampil(iso) {
+  const d = new Date(iso)
+  return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) +
+         ' · ' + d.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })
+}
+function jenisTampil(r) {
+  return r.channel === 'cash' ? 'Cash' : 'Virtual · ' + (LABEL_METODE[r.method] || '–')
+}
+
+// Ambil semua baris yang cocok, dipecah per 1000 agar tidak kena batas server
+async function ambilSemua(bangunQuery) {
+  const hasil = []
+  let mulai = 0
+  for (let i = 0; i < 20; i++) {
+    const { data, error } = await bangunQuery().range(mulai, mulai + 999)
+    if (error) throw error
+    hasil.push(...(data || []))
+    if (!data || data.length < 1000) break
+    mulai += 1000
+  }
+  return hasil
+}
+
+// ==================== TAB ====================
+document.querySelectorAll('.tabBtn').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabBtn').forEach(x => {
+    const aktif = x === b
+    x.classList.toggle('text-neutral-950', aktif)
+    x.classList.toggle('font-semibold', aktif)
+    x.classList.toggle('border-neutral-900', aktif)
+    x.classList.toggle('text-neutral-500', !aktif)
+    x.classList.toggle('font-medium', !aktif)
+    x.classList.toggle('border-transparent', !aktif)
+  })
+  document.getElementById('tabOverview').classList.toggle('hidden', b.dataset.tab !== 'overview')
+  document.getElementById('tabRiwayat').classList.toggle('hidden', b.dataset.tab !== 'riwayat')
+})
+
+// ==================== OVERVIEW ====================
+const JAM = 3600000, HARI = 86400000
+
+function infoPeriode(kunci) {
+  const kini = new Date()
+  const awalHari = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate())
+  switch (kunci) {
+    case 'hari':
+      return { mulai: awalHari, langkah: JAM, format: d => String(d.getHours()).padStart(2,'0') + ':00', sumbu: 'per jam' }
+    case '7hari':
+      return { mulai: new Date(awalHari.getTime() - 6*HARI), langkah: 4*JAM,
+               format: d => d.getDate() + '/' + (d.getMonth()+1) + ' ' + String(d.getHours()).padStart(2,'0') + ':00', sumbu: 'per 4 jam' }
+    case 'bulan':
+      return { mulai: new Date(kini.getFullYear(), kini.getMonth(), 1), langkah: HARI,
+               format: d => String(d.getDate()), sumbu: 'per hari' }
+    case '30hari':
+      return { mulai: new Date(awalHari.getTime() - 29*HARI), langkah: HARI,
+               format: d => d.getDate() + '/' + (d.getMonth()+1), sumbu: 'per hari' }
+    case '90hari':
+      return { mulai: new Date(awalHari.getTime() - 89*HARI), langkah: 2*HARI,
+               format: d => d.getDate() + '/' + (d.getMonth()+1), sumbu: 'per 2 hari' }
+    case 'tahun':
+      return { mulai: new Date(kini.getFullYear(), 0, 1), langkah: 7*HARI,
+               format: d => d.getDate() + '/' + (d.getMonth()+1), sumbu: 'per minggu' }
+    case 'setahun':
+      return { mulai: new Date(awalHari.getTime() - 364*HARI), langkah: 7*HARI,
+               format: d => d.getDate() + '/' + (d.getMonth()+1), sumbu: 'per minggu' }
+  }
+}
+
+let grafik = null
+
+async function muatOverview() {
+  const kunci = document.getElementById('periode').value
+  const p = infoPeriode(kunci)
+  document.getElementById('labelSumbu').textContent = 'sumbu ' + p.sumbu
+
+  // Kartu ringkas (kumulatif)
+  const { data: saldo } = await supabase.from('saldo_summary').select('*').single()
+  if (saldo) {
+    document.getElementById('kSaldoCash').textContent    = 'Rp ' + rupiah(saldo.saldo_cash)
+    document.getElementById('kSaldoVirtual').textContent = 'Rp ' + rupiah(saldo.saldo_virtual)
+    document.getElementById('kSaldoTotal').textContent   = 'Rp ' + rupiah(saldo.saldo_total)
+    document.getElementById('kTabungan').textContent     = 'Rp ' + rupiah(saldo.tabungan)
+  }
+
+  // Transaksi dalam periode
+  let baris = []
+  try {
+    baris = await ambilSemua(() => supabase.from('transaction_ledger')
+      .select('id,occurred_at,user_id,user_nama,nama_transaksi,category,channel,method,debit,credit,is_active')
+      .eq('is_active', true)
+      .gte('occurred_at', p.mulai.toISOString())
+      .order('occurred_at', { ascending: true }))
+  } catch (e) {
+    alert('Gagal memuat data: ' + e.message); return
+  }
+
+  gambarGrafik(baris, p)
+  gambarHighlight(baris)
+  await gambarTabelPengguna(baris)
+}
+
+function gambarGrafik(baris, p) {
+  const sekarang = Date.now()
+  const label = [], mulaiBucket = []
+  for (let t = p.mulai.getTime(); t <= sekarang; t += p.langkah) {
+    mulaiBucket.push(t)
+    label.push(p.format(new Date(t)))
+  }
+  const n = mulaiBucket.length
+  const masuk = new Array(n).fill(0)
+  const keluar = new Array(n).fill(0)
+
+  // lima pengguna paling aktif saja, agar grafik tetap terbaca
+  const hitungUser = {}
+  baris.forEach(r => { hitungUser[r.user_nama] = (hitungUser[r.user_nama] || 0) + 1 })
+  const namaUser = Object.keys(hitungUser).sort((a,b) => hitungUser[b] - hitungUser[a]).slice(0, 5)
+  const perUser = {}
+  namaUser.forEach(u => perUser[u] = new Array(n).fill(0))
+
+  baris.forEach(r => {
+    const t = new Date(r.occurred_at).getTime()
+    let i = Math.floor((t - p.mulai.getTime()) / p.langkah)
+    if (i < 0) i = 0
+    if (i >= n) i = n - 1
+    masuk[i]  += Number(r.credit) || 0
+    keluar[i] += Number(r.debit)  || 0
+    if (perUser[r.user_nama]) perUser[r.user_nama][i] += 1
+  })
+
+  const abu = ['#171717', '#525252', '#737373', '#A3A3A3', '#D4D4D4']
+  const dataset = [
+    { type:'bar', label:'Pemasukan', data:masuk,  backgroundColor:'#86EFAC', borderColor:'#16A34A', borderWidth:1, yAxisID:'y' },
+    { type:'bar', label:'Pengeluaran', data:keluar, backgroundColor:'#FCA5A5', borderColor:'#DC2626', borderWidth:1, yAxisID:'y' }
+  ].concat(namaUser.map((u, i) => ({
+    type:'line', label:u, data:perUser[u], borderColor:abu[i % abu.length],
+    backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.3, yAxisID:'y1'
+  })))
+
+  if (grafik) grafik.destroy()
+  grafik = new Chart(document.getElementById('grafik'), {
+    data: { labels: label, datasets: dataset },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { labels: { font:{ size:11 }, boxWidth:12, usePointStyle:true } },
+        tooltip: { callbacks: { label: c => c.dataset.yAxisID === 'y1'
+          ? c.dataset.label + ': ' + c.parsed.y + ' transaksi'
+          : c.dataset.label + ': Rp ' + rupiah(c.parsed.y) } }
+      },
+      scales: {
+        x: { grid:{ display:false }, ticks:{ font:{ size:10 }, maxRotation:0, autoSkip:true, maxTicksLimit:12 } },
+        y: { position:'left', beginAtZero:true, ticks:{ font:{ size:10 }, callback:v => rupiah(v) },
+             grid:{ color:'#F5F5F5' }, title:{ display:true, text:'Nilai (Rp)', font:{ size:10 } } },
+        y1:{ position:'right', beginAtZero:true, grid:{ display:false },
+             ticks:{ font:{ size:10 }, precision:0 }, title:{ display:true, text:'Jumlah transaksi', font:{ size:10 } } }
+      }
+    }
+  })
+}
+
+function gambarHighlight(baris) {
+  const keluar = baris.filter(r => Number(r.debit) > 0)
+  const masuk  = baris.filter(r => Number(r.credit) > 0)
+
+  function urut(arr, kolom) {
+    return arr.slice().sort((a,b) => Number(b[kolom]) - Number(a[kolom]))
+  }
+  function kartu(judul, r, kolom, warna) {
+    if (!r) return '<div class="px-4 py-3 border-b border-neutral-100 last:border-0">' +
+      '<p class="text-[11px] font-medium text-neutral-500">' + judul + '</p>' +
+      '<p class="text-sm text-neutral-400 mt-0.5">Tidak ada data</p></div>'
+    return '<div class="px-4 py-3 border-b border-neutral-100 last:border-0">' +
+      '<p class="text-[11px] font-medium text-neutral-500">' + judul + '</p>' +
+      '<div class="flex items-baseline gap-3 mt-0.5">' +
+        '<p class="flex-1 text-sm font-semibold text-neutral-950 truncate">' + r.nama_transaksi + '</p>' +
+        '<p class="text-sm font-bold ' + warna + '">Rp ' + rupiah(r[kolom]) + '</p>' +
+      '</div>' +
+      '<p class="text-[11px] text-neutral-400 mt-0.5">' + r.user_nama + ' · ' +
+        LABEL_KATEGORI[r.category] + ' · ' + tanggalTampil(r.occurred_at) + '</p>' +
+    '</div>'
+  }
+
+  const k = urut(keluar, 'debit')
+  const m = urut(masuk, 'credit')
+  document.getElementById('highlightKeluar').innerHTML =
+    kartu('Terbesar', k[0], 'debit', 'text-red-700') +
+    kartu('Terkecil', k[k.length-1], 'debit', 'text-red-700')
+  document.getElementById('highlightMasuk').innerHTML =
+    kartu('Terbesar', m[0], 'credit', 'text-green-700') +
+    kartu('Terkecil', m[m.length-1], 'credit', 'text-green-700')
+}
+
+async function gambarTabelPengguna(baris) {
+  const { data: ringkas } = await supabase.from('user_summary').select('*').order('nama')
+  const agg = {}
+  baris.forEach(r => {
+    const k = r.user_id
+    if (!agg[k]) agg[k] = { keluar:0, masuk:0, maxKeluar:0, maxMasuk:0 }
+    const d = Number(r.debit) || 0, c = Number(r.credit) || 0
+    agg[k].keluar += d; agg[k].masuk += c
+    if (d > agg[k].maxKeluar) agg[k].maxKeluar = d
+    if (c > agg[k].maxMasuk)  agg[k].maxMasuk = c
+  })
+
+  const tbody = document.getElementById('tbodyPengguna')
+  if (!ringkas || ringkas.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data.</td></tr>'
+    return
+  }
+  tbody.innerHTML = ringkas.map(u => {
+    const a = agg[u.user_id] || { keluar:0, masuk:0, maxKeluar:0, maxMasuk:0 }
+    return '<tr class="border-b border-neutral-100 last:border-0">' +
+      '<td class="px-4 py-3 text-[13px] font-semibold text-neutral-950">' + u.nama + '</td>' +
+      '<td class="px-4 py-3 text-right text-[13px] text-red-700">' + (a.keluar ? 'Rp ' + rupiah(a.keluar) : '—') + '</td>' +
+      '<td class="px-4 py-3 text-right text-[13px] text-green-700">' + (a.masuk ? 'Rp ' + rupiah(a.masuk) : '—') + '</td>' +
+      '<td class="px-4 py-3 text-right text-xs text-neutral-500">' + (a.maxKeluar ? 'Rp ' + rupiah(a.maxKeluar) : '—') + '</td>' +
+      '<td class="px-4 py-3 text-right text-xs text-neutral-500">' + (a.maxMasuk ? 'Rp ' + rupiah(a.maxMasuk) : '—') + '</td>' +
+      '<td class="px-4 py-3 text-right text-xs text-neutral-500">Rp ' + rupiah(u.saldo_cash) + '</td>' +
+      '<td class="px-4 py-3 text-right text-xs text-neutral-500">Rp ' + rupiah(u.saldo_virtual) + '</td>' +
+      '<td class="px-4 py-3 text-right text-[13px] font-semibold text-neutral-950">Rp ' + rupiah(u.saldo_total) + '</td>' +
+      '<td class="px-4 py-3 text-right text-[13px] font-semibold text-neutral-950">Rp ' + rupiah(u.tabungan) + '</td>' +
+    '</tr>'
+  }).join('')
+}
+
+document.getElementById('periode').onchange = muatOverview
+
+// ==================== RIWAYAT ====================
+let sortKolom = 'occurred_at'
+let sortNaik  = false
+let barisSaatIni = []
+
+const { data: daftarUser } = await supabase.from('profiles').select('id, nama').order('nama')
+if (daftarUser) {
+  document.getElementById('filterUser').insertAdjacentHTML('beforeend',
+    daftarUser.map(u => '<option value="' + u.id + '">' + u.nama + '</option>').join(''))
+}
+
+async function muatRiwayat() {
+  const { data: saldo } = await supabase.from('saldo_summary').select('*').single()
+  if (saldo) {
+    document.getElementById('saldoCash').textContent    = 'Rp ' + rupiah(saldo.saldo_cash)
+    document.getElementById('saldoVirtual').textContent = 'Rp ' + rupiah(saldo.saldo_virtual)
+    document.getElementById('saldoTotal').textContent   = 'Rp ' + rupiah(saldo.saldo_total)
+  }
+
+  const batas = parseInt(document.getElementById('jumlahTampil').value, 10)
+  let q = supabase.from('transaction_ledger').select('*')
+  const fu = document.getElementById('filterUser').value
+  const fk = document.getElementById('filterKategori').value
+  const fj = document.getElementById('filterJenis').value
+  if (fu) q = q.eq('user_id', fu)
+  if (fk) q = q.eq('category', fk)
+  if (fj) q = q.eq('channel', fj)
+  q = q.order(sortKolom, { ascending: sortNaik })
+  if (sortKolom !== 'occurred_at') q = q.order('occurred_at', { ascending: false })
+  q = q.limit(batas)
+
+  const { data, error } = await q
+  if (error) { alert('Gagal memuat data: ' + error.message); return }
+
+  barisSaatIni = data || []
+  gambarTabel(); gambarKartu()
+  const info = 'Menampilkan ' + barisSaatIni.length + ' transaksi (maksimal ' + batas + ')'
+  document.getElementById('infoJumlah').textContent = info
+  document.getElementById('infoJumlahMobile').textContent = info
+}
+
+function gambarTabel() {
+  const tbody = document.getElementById('tbodyTabel')
+  if (barisSaatIni.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-10 text-center text-sm text-neutral-400">Belum ada transaksi.</td></tr>'
+    return
+  }
+  tbody.innerHTML = barisSaatIni.map(r => {
+    const isDebit = Number(r.debit) > 0, mati = !r.is_active
+    const bgBaris = mati ? 'bg-neutral-50' : (isDebit ? 'bg-red-50' : 'bg-green-50')
+    const warnaAngka = mati ? 'text-neutral-400' : (isDebit ? 'text-red-700' : 'text-green-700')
+    const teksUtama = mati ? 'text-neutral-400 line-through' : 'text-neutral-950'
+    const teksLemah = mati ? 'text-neutral-400' : 'text-neutral-500'
+    return '<tr class="' + bgBaris + ' border-b border-neutral-200">' +
+      '<td class="px-4 py-3 text-xs ' + teksLemah + '">' + tanggalTampil(r.occurred_at) + '</td>' +
+      '<td class="px-4 py-3 text-xs ' + teksLemah + '">' + r.user_nama + '</td>' +
+      '<td class="px-4 py-3"><span class="text-[13px] font-semibold ' + teksUtama + '">' + r.nama_transaksi + '</span>' +
+        (r.pair_id ? '<span class="block text-[11px] text-neutral-400">pasangan otomatis</span>' : '') + '</td>' +
+      '<td class="px-4 py-3"><span class="inline-block rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium ' + (mati?'text-neutral-400':'text-neutral-700') + '">' + LABEL_KATEGORI[r.category] + '</span></td>' +
+      '<td class="px-4 py-3 text-right text-[13px] font-semibold ' + (isDebit ? warnaAngka : 'text-neutral-300') + '">' + (isDebit ? rupiah(r.debit) : '—') + '</td>' +
+      '<td class="px-4 py-3 text-right text-[13px] font-semibold ' + (!isDebit ? warnaAngka : 'text-neutral-300') + '">' + (!isDebit ? rupiah(r.credit) : '—') + '</td>' +
+      '<td class="px-4 py-3 text-right text-xs ' + teksLemah + '">' + rupiah(r.saldo_cash) + '</td>' +
+      '<td class="px-4 py-3 text-right text-xs ' + teksLemah + '">' + rupiah(r.saldo_virtual) + '</td>' +
+      '<td class="px-4 py-3 text-xs ' + teksLemah + '">' + jenisTampil(r) +
+        (mati ? ' <span class="inline-block rounded-md border border-red-200 bg-red-50 px-1.5 text-[10px] font-medium text-red-700">nonaktif</span>' : '') + '</td>' +
+      '<td class="px-4 py-3 text-right"><button class="tombolAksi text-neutral-500" data-id="' + r.id + '">⋮</button></td>' +
+    '</tr>'
+  }).join('')
+  pasangAksi()
+}
+
+function gambarKartu() {
+  const wadah = document.getElementById('daftarKartu')
+  if (barisSaatIni.length === 0) {
+    wadah.innerHTML = '<p class="text-center text-sm text-neutral-400 py-10">Belum ada transaksi.</p>'
+    return
+  }
+  wadah.innerHTML = barisSaatIni.map(r => {
+    const isDebit = Number(r.debit) > 0, mati = !r.is_active
+    const bg = mati ? 'bg-neutral-50 border-neutral-200'
+      : (isDebit ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200')
+    const warna = mati ? 'text-neutral-400' : (isDebit ? 'text-red-700' : 'text-green-700')
+    const nilai = isDebit ? '− Rp ' + rupiah(r.debit) : '+ Rp ' + rupiah(r.credit)
+    return '<div class="rounded-[10px] border ' + bg + ' px-3.5 py-3">' +
+      '<div class="flex items-start gap-2.5">' +
+        '<p class="flex-1 text-sm font-semibold ' + (mati ? 'text-neutral-400 line-through' : 'text-neutral-950') + '">' + r.nama_transaksi + '</p>' +
+        '<p class="text-[15px] font-bold ' + warna + '">' + nilai + '</p></div>' +
+      '<p class="mt-1 text-xs text-neutral-500">' + tanggalTampil(r.occurred_at) + '  ·  ' + r.user_nama + '</p>' +
+      '<div class="mt-2 flex flex-wrap items-center gap-1.5">' +
+        '<span class="rounded-md border border-neutral-200 bg-white px-1.5 py-0.5 text-[11px] text-neutral-700">' + LABEL_KATEGORI[r.category] + '</span>' +
+        '<span class="rounded-md border border-neutral-200 bg-white px-1.5 py-0.5 text-[11px] text-neutral-700">' + jenisTampil(r) + '</span>' +
+        (r.pair_id ? '<span class="rounded-md border border-neutral-200 bg-white px-1.5 py-0.5 text-[11px] text-neutral-400">pasangan</span>' : '') +
+        (mati ? '<span class="rounded-md border border-red-200 bg-white px-1.5 py-0.5 text-[11px] text-red-700">nonaktif</span>' : '') +
+        '<span class="flex-1"></span>' +
+        '<button class="tombolAksi text-neutral-500 px-1" data-id="' + r.id + '">⋮</button>' +
+      '</div></div>'
+  }).join('')
+  pasangAksi()
+}
+
+let idAktif = null
+const modal = document.getElementById('modalAksi')
+function pasangAksi() {
+  document.querySelectorAll('.tombolAksi').forEach(b => b.onclick = () => {
+    idAktif = b.dataset.id
+    const baris = barisSaatIni.find(x => x.id === idAktif)
+    document.getElementById('modalNama').textContent = baris.nama_transaksi
+    document.getElementById('modalPeringatan').classList.toggle('hidden', !baris.pair_id)
+    document.getElementById('aksiNonaktif').textContent = baris.is_active ? 'Nonaktifkan' : 'Aktifkan kembali'
+    modal.classList.remove('hidden')
+  })
+}
+document.getElementById('aksiBatal').onclick = () => modal.classList.add('hidden')
+modal.onclick = e => { if (e.target === modal) modal.classList.add('hidden') }
+
+document.getElementById('aksiNonaktif').onclick = async () => {
+  const baris = barisSaatIni.find(x => x.id === idAktif)
+  const { error } = await supabase.from('transactions').update({ is_active: !baris.is_active }).eq('id', idAktif)
+  modal.classList.add('hidden')
+  if (error) alert('Gagal: ' + error.message)
+  else { muatRiwayat(); muatOverview() }
+}
+document.getElementById('aksiHapus').onclick = async () => {
+  if (!confirm('Hapus transaksi ini secara permanen? Baris pasangannya ikut terhapus.')) return
+  const { error } = await supabase.from('transactions').delete().eq('id', idAktif)
+  modal.classList.add('hidden')
+  if (error) alert('Gagal: ' + error.message)
+  else { muatRiwayat(); muatOverview() }
+}
+
+document.querySelectorAll('.sortBtn').forEach(b => b.onclick = () => {
+  const kolom = b.dataset.kolom
+  if (sortKolom === kolom) sortNaik = !sortNaik
+  else { sortKolom = kolom; sortNaik = false }
+  muatRiwayat()
+})
+document.getElementById('sortMobile').onchange = e => {
+  const [k, naik] = e.target.value.split('|')
+  sortKolom = k; sortNaik = naik === 'true'
+  muatRiwayat()
+}
+;['filterUser','filterKategori','filterJenis','jumlahTampil'].forEach(id =>
+  document.getElementById(id).onchange = muatRiwayat)
+
+function dataUntukExport() {
+  return barisSaatIni.map(r => ({
+    'Tanggal & Waktu': tanggalTampil(r.occurred_at),
+    'User': r.user_nama,
+    'Nama transaksi': r.nama_transaksi,
+    'Kategori': LABEL_KATEGORI[r.category],
+    'Debit': Number(r.debit) || 0,
+    'Kredit': Number(r.credit) || 0,
+    'Saldo cash': Number(r.saldo_cash) || 0,
+    'Saldo virtual': Number(r.saldo_virtual) || 0,
+    'Jenis transaksi': jenisTampil(r),
+    'Status': r.is_active ? 'Aktif' : 'Nonaktif'
+  }))
+}
+const namaBerkas = ext => 'riwayat-transaksi-' + new Date().toISOString().slice(0,10) + '.' + ext
+
+document.getElementById('exportCsv').onclick = () => {
+  const rows = dataUntukExport()
+  if (!rows.length) return alert('Tidak ada data untuk diunduh.')
+  const kolom = Object.keys(rows[0])
+  const isi = [kolom.join(',')].concat(
+    rows.map(r => kolom.map(k => '"' + String(r[k]).replace(/"/g,'""') + '"').join(','))).join('\n')
+  const blob = new Blob(['\uFEFF' + isi], { type:'text/csv;charset=utf-8;' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob); a.download = namaBerkas('csv'); a.click()
+}
+document.getElementById('exportXlsx').onclick = () => {
+  const rows = dataUntukExport()
+  if (!rows.length) return alert('Tidak ada data untuk diunduh.')
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Riwayat')
+  XLSX.writeFile(wb, namaBerkas('xlsx'))
+}
+
+// ==================== JALANKAN ====================
+await muatOverview()
+await muatRiwayat()
+</script>
+
+</body>
+</html>

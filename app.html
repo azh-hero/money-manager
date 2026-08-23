@@ -245,10 +245,13 @@ document.getElementById('menuLogout').addEventListener('click', logout)
 // ---------- Data sementara ----------
 let data = { jumlah: 0, arah: null, jenis: null, metode: null }
 
+// Tabungan dibalik: menabung mengurangi saldo, ambil tabungan menambah saldo.
+// Setor tunai & tarik tunai hanya tersedia untuk transaksi Virtual.
 const KATEGORI = {
-  plus:  [['income','Income'], ['setor_tunai','Setor tunai'], ['menabung','Menabung'], ['roi','ROI']],
-  minus: [['expenses','Expenses'], ['tarik_tunai','Tarik tunai'], ['ambil_tabungan','Ambil tabungan'], ['capex','Capex']]
+  plus:  [['income','Income'], ['setor_tunai','Setor tunai'], ['ambil_tabungan','Ambil tabungan'], ['roi','ROI']],
+  minus: [['expenses','Expenses'], ['tarik_tunai','Tarik tunai'], ['menabung','Menabung'], ['capex','Capex']]
 }
+const HANYA_VIRTUAL = ['setor_tunai', 'tarik_tunai']
 
 // ---------- Tampilan pilihan aktif ----------
 function setAktif(tombol, aktif) {
@@ -326,8 +329,19 @@ document.getElementById('tombolLanjut').addEventListener('click', () => {
 
 function isiKategori() {
   const select = document.getElementById('inputKategori')
-  select.innerHTML = KATEGORI[data.arah]
+  const pilihan = KATEGORI[data.arah].filter(([nilai]) =>
+    data.jenis === 'virtual' || !HANYA_VIRTUAL.includes(nilai))
+
+  select.innerHTML = pilihan
     .map(([nilai, label]) => '<option value="' + nilai + '">' + label + '</option>').join('')
+
+  const catatan = document.getElementById('catatanJenis')
+  if (data.jenis === 'cash') {
+    catatan.textContent = 'Setor tunai dan tarik tunai hanya tersedia untuk transaksi Virtual.'
+    catatan.classList.remove('hidden')
+  } else {
+    catatan.classList.add('hidden')
+  }
 }
 
 function terapkanJenis() {
@@ -341,23 +355,6 @@ function terapkanJenis() {
     document.querySelectorAll('.pilihMetode').forEach(x => setAktif(x, false))
   }
 }
-
-// Tarik tunai & setor tunai selalu berpasangan cash <-> virtual,
-// jadi baris utamanya harus Virtual.
-document.getElementById('inputKategori').addEventListener('change', () => {
-  const kategori = document.getElementById('inputKategori').value
-  const catatan = document.getElementById('catatanJenis')
-  if ((kategori === 'tarik_tunai' || kategori === 'setor_tunai') && data.jenis === 'cash') {
-    data.jenis = 'virtual'
-    terapkanJenis()
-    catatan.textContent = 'Diubah otomatis ke Virtual karena ' +
-      (kategori === 'tarik_tunai' ? 'tarik tunai' : 'setor tunai') +
-      ' selalu memindahkan saldo antara virtual dan cash.'
-    catatan.classList.remove('hidden')
-  } else {
-    catatan.classList.add('hidden')
-  }
-})
 
 document.getElementById('tombolKembali').addEventListener('click', () => tampilkan('viewMain'))
 

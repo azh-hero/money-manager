@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Money Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-neutral-50 min-h-screen">
+
+  <div class="max-w-md mx-auto p-6">
+    <div class="bg-white border border-neutral-200 rounded-xl p-6 mt-10 shadow-sm">
+      <p class="text-sm text-neutral-500">Berhasil masuk sebagai</p>
+      <h1 id="nama" class="text-2xl font-bold text-neutral-950 mt-1">…</h1>
+
+      <div class="mt-4 space-y-2.5">
+        <div class="flex justify-between text-sm">
+          <span class="text-neutral-500">Username</span>
+          <span id="username" class="font-semibold text-neutral-950">…</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-neutral-500">Role</span>
+          <span id="role" class="font-semibold text-neutral-950">…</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-neutral-500">Status</span>
+          <span id="status" class="font-semibold text-neutral-950">…</span>
+        </div>
+      </div>
+
+      <div class="mt-5 rounded-[10px] bg-neutral-100 px-3.5 py-3">
+        <p class="text-[13px] text-neutral-500">
+          Halaman sementara. Main Screen akan menggantikan halaman ini di tahap berikutnya.
+        </p>
+      </div>
+
+      <button id="tombolLogout"
+        class="mt-5 w-full rounded-lg border border-neutral-200 bg-white py-3 text-[15px] font-medium text-neutral-950">
+        Log out
+      </button>
+    </div>
+
+    <div class="bg-white border border-neutral-200 rounded-xl p-6 mt-5 shadow-sm">
+      <p class="text-sm font-semibold text-neutral-950">Perangkat aktif</p>
+      <div id="daftarSesi" class="mt-3 space-y-2"></div>
+    </div>
+  </div>
+
+<script type="module">
+  import { supabase, requireLogin, logout } from './config.js'
+
+  const profile = await requireLogin()
+  if (profile) {
+    document.getElementById('nama').textContent     = profile.nama
+    document.getElementById('username').textContent = '@' + profile.username
+    document.getElementById('role').textContent     = profile.role
+    document.getElementById('status').textContent   = profile.is_active ? 'Aktif' : 'Nonaktif'
+
+    const { data: sesi } = await supabase
+      .from('user_sessions')
+      .select('device_label, created_at')
+      .order('created_at', { ascending: false })
+
+    const wadah = document.getElementById('daftarSesi')
+    if (!sesi || sesi.length === 0) {
+      wadah.innerHTML = '<p class="text-sm text-neutral-400">Belum ada catatan.</p>'
+    } else {
+      wadah.innerHTML = sesi.map(s =>
+        '<div class="flex justify-between text-sm">' +
+          '<span class="text-neutral-950">' + (s.device_label || 'Perangkat') + '</span>' +
+          '<span class="text-neutral-400">' + new Date(s.created_at).toLocaleString('id-ID') + '</span>' +
+        '</div>'
+      ).join('')
+    }
+  }
+
+  document.getElementById('tombolLogout').addEventListener('click', logout)
+</script>
+
+</body>
+</html>

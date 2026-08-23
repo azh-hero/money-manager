@@ -8,77 +8,457 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; }</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    input:focus, select:focus { outline: 2px solid #A1A1A1; outline-offset: 1px; }
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body class="bg-neutral-50 min-h-screen">
 
-  <div class="max-w-md mx-auto p-6">
-    <div class="bg-white border border-neutral-200 rounded-xl p-6 mt-10 shadow-sm">
-      <p class="text-sm text-neutral-500">Berhasil masuk sebagai</p>
-      <h1 id="nama" class="text-2xl font-bold text-neutral-950 mt-1">…</h1>
-
-      <div class="mt-4 space-y-2.5">
-        <div class="flex justify-between text-sm">
-          <span class="text-neutral-500">Username</span>
-          <span id="username" class="font-semibold text-neutral-950">…</span>
-        </div>
-        <div class="flex justify-between text-sm">
-          <span class="text-neutral-500">Role</span>
-          <span id="role" class="font-semibold text-neutral-950">…</span>
-        </div>
-        <div class="flex justify-between text-sm">
-          <span class="text-neutral-500">Status</span>
-          <span id="status" class="font-semibold text-neutral-950">…</span>
-        </div>
-      </div>
-
-      <div class="mt-5 rounded-[10px] bg-neutral-100 px-3.5 py-3">
-        <p class="text-[13px] text-neutral-500">
-          Halaman sementara. Main Screen akan menggantikan halaman ini di tahap berikutnya.
-        </p>
-      </div>
-
-      <button id="tombolLogout"
-        class="mt-5 w-full rounded-lg border border-neutral-200 bg-white py-3 text-[15px] font-medium text-neutral-950">
-        Log out
-      </button>
+<!-- ================= TOP BAR ================= -->
+<header class="bg-white border-b border-neutral-200">
+  <div class="flex items-center gap-3 px-5 py-3.5 md:px-8">
+    <div class="bg-neutral-100 rounded-full px-3 py-2">
+      <span id="avatar" class="text-[13px] font-semibold text-neutral-700">–</span>
     </div>
+    <div class="flex-1 min-w-0">
+      <p id="barNama" class="text-sm font-semibold text-neutral-950 truncate">…</p>
+      <p id="barRole" class="text-xs text-neutral-500 truncate">…</p>
+    </div>
+    <button id="tombolMenu" class="rounded-lg border border-neutral-200 p-2" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
 
-    <div class="bg-white border border-neutral-200 rounded-xl p-6 mt-5 shadow-sm">
-      <p class="text-sm font-semibold text-neutral-950">Perangkat aktif</p>
-      <div id="daftarSesi" class="mt-3 space-y-2"></div>
+<!-- ================= MENU DRAWER ================= -->
+<div id="overlay" class="hidden fixed inset-0 bg-neutral-950/50 z-40"></div>
+<aside id="drawer" class="hidden fixed top-0 right-0 h-full w-72 bg-white z-50 p-5 rounded-l-2xl">
+  <div class="flex items-center gap-2">
+    <p class="flex-1 text-[17px] font-semibold text-neutral-950">Menu</p>
+    <button id="tutupMenu" class="rounded-lg bg-neutral-100 p-1.5" aria-label="Tutup">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <nav class="mt-5 space-y-1.5">
+    <a id="menuDashboard" href="dashboard.html" class="hidden flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium text-neutral-950">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+      Dashboard
+    </a>
+    <button id="menuLogout" class="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium text-neutral-950">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      Log out
+    </button>
+  </nav>
+</aside>
+
+<main class="px-5 py-6 md:px-8 md:py-10">
+
+<!-- ================= VIEW 1 — MAIN SCREEN ================= -->
+<section id="viewMain" class="w-full max-w-md mx-auto md:bg-white md:border md:border-neutral-200 md:rounded-xl md:p-8 md:shadow-sm">
+
+  <div class="hidden md:block mb-6">
+    <h1 class="text-[22px] font-bold text-neutral-950">Catat transaksi</h1>
+    <p class="text-sm text-neutral-500 mt-1">Isi jumlah, lalu pilih jenis transaksi dan metodenya.</p>
+  </div>
+
+  <div id="errMain" class="hidden mb-5 rounded-[10px] border border-red-200 bg-red-50 px-4 py-3">
+    <p id="errMainTeks" class="text-sm text-red-700"></p>
+  </div>
+
+  <!-- Jumlah -->
+  <label class="block text-sm font-medium text-neutral-950">Jumlah</label>
+  <div class="mt-2 flex items-center gap-2.5 rounded-[10px] border border-neutral-200 bg-white px-4 py-4">
+    <span class="text-lg font-medium text-neutral-500">Rp</span>
+    <input id="inputJumlah" type="text" inputmode="numeric" placeholder="0"
+      class="flex-1 w-full text-[28px] font-semibold text-neutral-950 placeholder:text-neutral-400 outline-none">
+  </div>
+
+  <!-- Transaksi -->
+  <div class="mt-6 flex items-center gap-2">
+    <p class="flex-1 text-sm font-medium text-neutral-950">Transaksi</p>
+    <p id="hintArah" class="text-xs text-neutral-400">wajib dipilih</p>
+  </div>
+  <div class="mt-2.5 grid grid-cols-2 gap-3">
+    <button data-arah="plus" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-4 flex flex-col items-center gap-2">
+      <span class="rounded-full bg-neutral-100 p-2 ikon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+      </span>
+      <span class="text-[13px] font-medium text-neutral-950 label">Tambah saldo</span>
+    </button>
+    <button data-arah="minus" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-4 flex flex-col items-center gap-2">
+      <span class="rounded-full bg-neutral-100 p-2 ikon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+      </span>
+      <span class="text-[13px] font-medium text-neutral-950 label">Kurangi saldo</span>
+    </button>
+  </div>
+
+  <!-- Jenis -->
+  <div class="mt-6 flex items-center gap-2">
+    <p class="flex-1 text-sm font-medium text-neutral-950">Jenis transaksi</p>
+    <p id="hintJenis" class="text-xs text-neutral-400">wajib dipilih</p>
+  </div>
+  <div class="mt-2.5 grid grid-cols-2 gap-3">
+    <button data-jenis="cash" class="pilihJenis rounded-[10px] border border-neutral-200 bg-white py-3.5 flex items-center justify-center gap-2.5">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" class="ikon"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+      <span class="text-sm font-medium text-neutral-950 label">Cash</span>
+    </button>
+    <button data-jenis="virtual" class="pilihJenis rounded-[10px] border border-neutral-200 bg-white py-3.5 flex items-center justify-center gap-2.5">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" class="ikon"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+      <span class="text-sm font-medium text-neutral-950 label">Virtual</span>
+    </button>
+  </div>
+
+  <button id="tombolLanjut" disabled
+    class="mt-8 w-full rounded-lg bg-neutral-900 py-3.5 text-[15px] font-medium text-neutral-50 disabled:opacity-40">
+    Submit
+  </button>
+</section>
+
+<!-- ================= VIEW 2 — CONFIRMATION ================= -->
+<section id="viewKonfirmasi" class="hidden w-full max-w-md md:max-w-2xl mx-auto md:bg-white md:border md:border-neutral-200 md:rounded-xl md:p-8 md:shadow-sm">
+
+  <div class="flex items-center gap-3">
+    <button id="tombolKembali" aria-label="Kembali">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </button>
+    <h1 class="text-base md:text-[22px] font-semibold md:font-bold text-neutral-950">Konfirmasi transaksi</h1>
+  </div>
+
+  <div id="errKonf" class="hidden mt-5 rounded-[10px] border border-red-200 bg-red-50 px-4 py-3">
+    <p id="errKonfTeks" class="text-sm text-red-700"></p>
+  </div>
+
+  <!-- Jumlah besar -->
+  <div class="mt-5 rounded-xl bg-neutral-100 py-5 flex flex-col items-center gap-1">
+    <p class="text-xs font-medium text-neutral-500">Jumlah transaksi</p>
+    <p id="tampilJumlah" class="text-[34px] md:text-[40px] font-bold text-neutral-950">+ Rp 0</p>
+    <span class="rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-500">tidak dapat diubah</span>
+  </div>
+
+  <div class="mt-5 grid grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-neutral-950">Tanggal</label>
+      <input id="inputTanggal" type="date" class="w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-950">
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-neutral-950">Waktu</label>
+      <input id="inputWaktu" type="time" class="w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-950">
     </div>
   </div>
 
+  <div class="mt-4 space-y-2">
+    <label class="block text-sm font-medium text-neutral-950">Jenis transaksi</label>
+    <div class="rounded-lg border border-neutral-200 bg-neutral-100 px-3.5 py-2.5">
+      <span id="tampilJenis" class="text-sm text-neutral-700">–</span>
+    </div>
+    <p id="catatanJenis" class="hidden text-xs text-neutral-500"></p>
+  </div>
+
+  <!-- Metode, hanya untuk Virtual -->
+  <div id="blokMetode" class="hidden mt-4">
+    <div class="flex items-center gap-2">
+      <p class="flex-1 text-sm font-medium text-neutral-950">Metode</p>
+      <p class="text-xs text-neutral-400">wajib dipilih</p>
+    </div>
+    <div class="mt-2 grid grid-cols-2 gap-3">
+      <button data-metode="qris" class="pilihMetode rounded-lg border border-neutral-200 bg-white py-2.5 flex items-center justify-center gap-2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" class="ikon"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M18 18h3v3h-3z"/></svg>
+        <span class="text-sm font-medium text-neutral-950 label">QRIS</span>
+      </button>
+      <button data-metode="transfer" class="pilihMetode rounded-lg border border-neutral-200 bg-white py-2.5 flex items-center justify-center gap-2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" class="ikon"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        <span class="text-sm font-medium text-neutral-950 label">Transfer</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-4 space-y-2">
+    <label for="inputNama" class="block text-sm font-medium text-neutral-950">Nama transaksi</label>
+    <input id="inputNama" type="text" placeholder="contoh: Pembayaran proyek klien"
+      class="w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-950 placeholder:text-neutral-400">
+  </div>
+
+  <div class="mt-4 space-y-2">
+    <label for="inputKategori" class="block text-sm font-medium text-neutral-950">Kategori transaksi</label>
+    <select id="inputKategori" class="w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-950"></select>
+  </div>
+
+  <button id="tombolSimpan"
+    class="mt-7 w-full md:w-auto md:ml-auto md:block rounded-lg bg-neutral-900 px-6 py-3.5 text-[15px] font-medium text-neutral-50 disabled:opacity-40">
+    Submit data
+  </button>
+</section>
+
+<!-- ================= VIEW 3 — BERHASIL ================= -->
+<section id="viewBerhasil" class="hidden w-full max-w-md mx-auto md:bg-white md:border md:border-neutral-200 md:rounded-xl md:p-8 md:shadow-sm text-center">
+  <div class="flex flex-col items-center pt-10 md:pt-0">
+    <div class="rounded-full bg-neutral-900 p-5">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <h1 class="mt-6 text-[22px] font-bold text-neutral-950">Transaksi berhasil dicatat</h1>
+    <p class="mt-1.5 text-sm text-neutral-500">Data sudah tersimpan di riwayat transaksi.</p>
+
+    <div id="ringkasan" class="mt-6 w-full rounded-xl bg-neutral-100 px-4 py-4 space-y-2.5 text-left"></div>
+
+    <p id="teksHitung" class="mt-8 text-[13px] font-medium text-neutral-500">Kembali ke Main Screen dalam 5 detik</p>
+    <div class="mt-2.5 w-full h-1.5 rounded-full bg-neutral-200 overflow-hidden">
+      <div id="barHitung" class="h-full bg-neutral-900 rounded-full" style="width:100%"></div>
+    </div>
+
+    <button id="tombolSekarang" class="mt-5 w-full rounded-lg border border-neutral-200 bg-white py-3.5 text-[15px] font-medium text-neutral-950">
+      Kembali sekarang
+    </button>
+  </div>
+</section>
+
+</main>
+
 <script type="module">
-  import { supabase, requireLogin, logout } from './config.js'
+import { supabase, requireLogin, logout, rupiah, initials } from './config.js'
 
-  const profile = await requireLogin()
-  if (profile) {
-    document.getElementById('nama').textContent     = profile.nama
-    document.getElementById('username').textContent = '@' + profile.username
-    document.getElementById('role').textContent     = profile.role
-    document.getElementById('status').textContent   = profile.is_active ? 'Aktif' : 'Nonaktif'
+const profile = await requireLogin()
+if (!profile) throw new Error('belum login')
 
-    const { data: sesi } = await supabase
-      .from('user_sessions')
-      .select('device_label, created_at')
-      .order('created_at', { ascending: false })
+document.getElementById('avatar').textContent  = initials(profile.nama)
+document.getElementById('barNama').textContent = profile.nama
+document.getElementById('barRole').textContent =
+  profile.role === 'superadmin' ? 'Superadmin' :
+  profile.role === 'admin' ? 'Admin' : 'Pengguna biasa'
 
-    const wadah = document.getElementById('daftarSesi')
-    if (!sesi || sesi.length === 0) {
-      wadah.innerHTML = '<p class="text-sm text-neutral-400">Belum ada catatan.</p>'
-    } else {
-      wadah.innerHTML = sesi.map(s =>
-        '<div class="flex justify-between text-sm">' +
-          '<span class="text-neutral-950">' + (s.device_label || 'Perangkat') + '</span>' +
-          '<span class="text-neutral-400">' + new Date(s.created_at).toLocaleString('id-ID') + '</span>' +
-        '</div>'
-      ).join('')
-    }
+if (profile.role === 'admin' || profile.role === 'superadmin') {
+  document.getElementById('menuDashboard').classList.remove('hidden')
+}
+
+// ---------- Menu ----------
+const overlay = document.getElementById('overlay')
+const drawer  = document.getElementById('drawer')
+function bukaMenu()  { overlay.classList.remove('hidden'); drawer.classList.remove('hidden') }
+function tutupMenu() { overlay.classList.add('hidden');    drawer.classList.add('hidden') }
+document.getElementById('tombolMenu').addEventListener('click', bukaMenu)
+document.getElementById('tutupMenu').addEventListener('click', tutupMenu)
+overlay.addEventListener('click', tutupMenu)
+document.getElementById('menuLogout').addEventListener('click', logout)
+
+// ---------- Data sementara ----------
+let data = { jumlah: 0, arah: null, jenis: null, metode: null }
+
+const KATEGORI = {
+  plus:  [['income','Income'], ['setor_tunai','Setor tunai'], ['menabung','Menabung'], ['roi','ROI']],
+  minus: [['expenses','Expenses'], ['tarik_tunai','Tarik tunai'], ['ambil_tabungan','Ambil tabungan'], ['capex','Capex']]
+}
+
+// ---------- Tampilan pilihan aktif ----------
+function setAktif(tombol, aktif) {
+  const ikon  = tombol.querySelector('.ikon')
+  const label = tombol.querySelector('.label')
+  if (aktif) {
+    tombol.classList.add('bg-neutral-900','border-neutral-900')
+    tombol.classList.remove('bg-white','border-neutral-200')
+    label.classList.add('text-neutral-50'); label.classList.remove('text-neutral-950')
+    if (ikon && ikon.tagName === 'SPAN') { ikon.classList.add('bg-white'); ikon.classList.remove('bg-neutral-100'); ikon.querySelector('svg').setAttribute('stroke','#171717') }
+    else if (ikon) ikon.setAttribute('stroke','#FAFAFA')
+  } else {
+    tombol.classList.remove('bg-neutral-900','border-neutral-900')
+    tombol.classList.add('bg-white','border-neutral-200')
+    label.classList.remove('text-neutral-50'); label.classList.add('text-neutral-950')
+    if (ikon && ikon.tagName === 'SPAN') { ikon.classList.remove('bg-white'); ikon.classList.add('bg-neutral-100'); ikon.querySelector('svg').setAttribute('stroke','#404040') }
+    else if (ikon) ikon.setAttribute('stroke','#404040')
+  }
+}
+
+// ---------- Input jumlah ----------
+const inputJumlah = document.getElementById('inputJumlah')
+inputJumlah.addEventListener('input', () => {
+  const angka = inputJumlah.value.replace(/\D/g, '')
+  data.jumlah = angka ? parseInt(angka, 10) : 0
+  inputJumlah.value = data.jumlah ? data.jumlah.toLocaleString('id-ID') : ''
+  cekLanjut()
+})
+
+// ---------- Radio ----------
+document.querySelectorAll('.pilihArah').forEach(b => b.addEventListener('click', () => {
+  data.arah = b.dataset.arah
+  document.querySelectorAll('.pilihArah').forEach(x => setAktif(x, x === b))
+  document.getElementById('hintArah').classList.add('hidden')
+  cekLanjut()
+}))
+document.querySelectorAll('.pilihJenis').forEach(b => b.addEventListener('click', () => {
+  data.jenis = b.dataset.jenis
+  document.querySelectorAll('.pilihJenis').forEach(x => setAktif(x, x === b))
+  document.getElementById('hintJenis').classList.add('hidden')
+  cekLanjut()
+}))
+document.querySelectorAll('.pilihMetode').forEach(b => b.addEventListener('click', () => {
+  data.metode = b.dataset.metode
+  document.querySelectorAll('.pilihMetode').forEach(x => setAktif(x, x === b))
+}))
+
+function cekLanjut() {
+  document.getElementById('tombolLanjut').disabled = !(data.jumlah > 0 && data.arah && data.jenis)
+}
+
+// ---------- Pindah view ----------
+function tampilkan(id) {
+  ['viewMain','viewKonfirmasi','viewBerhasil'].forEach(v =>
+    document.getElementById(v).classList.toggle('hidden', v !== id))
+  window.scrollTo(0, 0)
+}
+
+// ---------- Ke konfirmasi ----------
+document.getElementById('tombolLanjut').addEventListener('click', () => {
+  const tanda = data.arah === 'plus' ? '+' : '−'
+  document.getElementById('tampilJumlah').textContent = tanda + ' Rp ' + rupiah(data.jumlah)
+
+  const sekarang = new Date()
+  document.getElementById('inputTanggal').value = sekarang.toISOString().slice(0, 10)
+  document.getElementById('inputWaktu').value =
+    String(sekarang.getHours()).padStart(2,'0') + ':' + String(sekarang.getMinutes()).padStart(2,'0')
+
+  isiKategori()
+  terapkanJenis()
+  document.getElementById('inputNama').value = ''
+  document.getElementById('errKonf').classList.add('hidden')
+  tampilkan('viewKonfirmasi')
+})
+
+function isiKategori() {
+  const select = document.getElementById('inputKategori')
+  select.innerHTML = KATEGORI[data.arah]
+    .map(([nilai, label]) => '<option value="' + nilai + '">' + label + '</option>').join('')
+}
+
+function terapkanJenis() {
+  document.getElementById('tampilJenis').textContent = data.jenis === 'cash' ? 'Cash' : 'Virtual'
+  const blok = document.getElementById('blokMetode')
+  if (data.jenis === 'virtual') {
+    blok.classList.remove('hidden')
+  } else {
+    blok.classList.add('hidden')
+    data.metode = null
+    document.querySelectorAll('.pilihMetode').forEach(x => setAktif(x, false))
+  }
+}
+
+// Tarik tunai & setor tunai selalu berpasangan cash <-> virtual,
+// jadi baris utamanya harus Virtual.
+document.getElementById('inputKategori').addEventListener('change', () => {
+  const kategori = document.getElementById('inputKategori').value
+  const catatan = document.getElementById('catatanJenis')
+  if ((kategori === 'tarik_tunai' || kategori === 'setor_tunai') && data.jenis === 'cash') {
+    data.jenis = 'virtual'
+    terapkanJenis()
+    catatan.textContent = 'Diubah otomatis ke Virtual karena ' +
+      (kategori === 'tarik_tunai' ? 'tarik tunai' : 'setor tunai') +
+      ' selalu memindahkan saldo antara virtual dan cash.'
+    catatan.classList.remove('hidden')
+  } else {
+    catatan.classList.add('hidden')
+  }
+})
+
+document.getElementById('tombolKembali').addEventListener('click', () => tampilkan('viewMain'))
+
+// ---------- Simpan ----------
+const tombolSimpan = document.getElementById('tombolSimpan')
+tombolSimpan.addEventListener('click', async () => {
+  const kotak = document.getElementById('errKonf')
+  const teks  = document.getElementById('errKonfTeks')
+  kotak.classList.add('hidden')
+
+  const nama     = document.getElementById('inputNama').value.trim()
+  const kategori = document.getElementById('inputKategori').value
+  const tanggal  = document.getElementById('inputTanggal').value
+  const waktu    = document.getElementById('inputWaktu').value
+
+  function gagal(pesan) { teks.textContent = pesan; kotak.classList.remove('hidden'); window.scrollTo(0,0) }
+
+  if (!nama)  return gagal('Nama transaksi wajib diisi.')
+  if (!tanggal || !waktu) return gagal('Tanggal dan waktu wajib diisi.')
+  if (data.jenis === 'virtual' && !data.metode) return gagal('Pilih metode QRIS atau Transfer.')
+
+  tombolSimpan.disabled = true
+  tombolSimpan.textContent = 'Menyimpan…'
+
+  const { error } = await supabase.from('transactions').insert({
+    user_id:     profile.id,
+    occurred_at: new Date(tanggal + 'T' + waktu).toISOString(),
+    nama:        nama,
+    category:    kategori,
+    direction:   data.arah,
+    channel:     data.jenis,
+    method:      data.jenis === 'virtual' ? data.metode : null,
+    debit:       data.arah === 'minus' ? data.jumlah : 0,
+    credit:      data.arah === 'plus'  ? data.jumlah : 0
+  })
+
+  tombolSimpan.disabled = false
+  tombolSimpan.textContent = 'Submit data'
+
+  if (error) {
+    if (error.code === '42501') return gagal('Akun Anda nonaktif, sehingga tidak dapat menyimpan data.')
+    return gagal('Gagal menyimpan: ' + error.message)
   }
 
-  document.getElementById('tombolLogout').addEventListener('click', logout)
+  tampilkanBerhasil(nama, kategori)
+})
+
+// ---------- Berhasil ----------
+let hitungMundur = null
+
+function tampilkanBerhasil(nama, kategori) {
+  const tanda = data.arah === 'plus' ? '+' : '−'
+  const labelKategori = KATEGORI[data.arah].find(k => k[0] === kategori)[1]
+  const labelJenis = data.jenis === 'cash' ? 'Cash'
+    : 'Virtual · ' + (data.metode === 'qris' ? 'QRIS' : 'Transfer')
+
+  const baris = [
+    ['Jumlah', tanda + ' Rp ' + rupiah(data.jumlah)],
+    ['Nama transaksi', nama],
+    ['Kategori', labelKategori],
+    ['Jenis', labelJenis]
+  ]
+  document.getElementById('ringkasan').innerHTML = baris.map(([k, v]) =>
+    '<div class="flex justify-between gap-3 text-[13px]">' +
+      '<span class="text-neutral-500">' + k + '</span>' +
+      '<span class="font-semibold text-neutral-950 text-right">' + v + '</span>' +
+    '</div>').join('')
+
+  tampilkan('viewBerhasil')
+
+  let sisa = 5
+  const teks = document.getElementById('teksHitung')
+  const bar  = document.getElementById('barHitung')
+  teks.textContent = 'Kembali ke Main Screen dalam 5 detik'
+  bar.style.width = '100%'
+
+  clearInterval(hitungMundur)
+  hitungMundur = setInterval(() => {
+    sisa--
+    bar.style.width = (sisa / 5 * 100) + '%'
+    if (sisa <= 0) { clearInterval(hitungMundur); resetSemua() }
+    else teks.textContent = 'Kembali ke Main Screen dalam ' + sisa + ' detik'
+  }, 1000)
+}
+
+document.getElementById('tombolSekarang').addEventListener('click', () => {
+  clearInterval(hitungMundur)
+  resetSemua()
+})
+
+function resetSemua() {
+  data = { jumlah: 0, arah: null, jenis: null, metode: null }
+  inputJumlah.value = ''
+  document.querySelectorAll('.pilihArah, .pilihJenis, .pilihMetode').forEach(x => setAktif(x, false))
+  document.getElementById('hintArah').classList.remove('hidden')
+  document.getElementById('hintJenis').classList.remove('hidden')
+  document.getElementById('catatanJenis').classList.add('hidden')
+  document.getElementById('errMain').classList.add('hidden')
+  cekLanjut()
+  tampilkan('viewMain')
+}
 </script>
 
 </body>

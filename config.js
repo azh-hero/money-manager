@@ -6,8 +6,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
 // ====== GANTI DUA BARIS DI BAWAH INI ======
-export const SUPABASE_URL = 'TEMPEL_PROJECT_URL_DI_SINI'
-export const SUPABASE_ANON_KEY = 'TEMPEL_ANON_PUBLIC_KEY_DI_SINI'
+export const SUPABASE_URL = 'https://dguvsoxvkguougpewddf.supabase.co'
+export const SUPABASE_ANON_KEY = 'sb_publishable_4IlNLlfWVMawXoub1ZZb8A_bd-Nl_Sg'
 // ==========================================
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)

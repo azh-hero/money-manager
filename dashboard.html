@@ -542,14 +542,23 @@ function infoPeriode(k) {
   }
 }
 
-// Menabung tidak dihitung sebagai pengeluaran — dia berpindah ke tabungan, bukan dibelanjakan.
-// Arus besar mengukur perputaran uang: nilai transaksi apa pun yang mencapai batas, tanpa memandang
-// kategori maupun arah, sehingga menabung, tarik/setor tunai, dan transfer ikut terhitung.
+// ---- Aturan tampilan grafik Overview (tidak menyentuh perhitungan di database) ----
+// Tarik tunai & setor tunai  : hanya memindah uang antar dompet sendiri, tidak dihitung.
+// Pindah aset (transfer)     : tetap dihitung, karena pengirim & penerima orang berbeda.
+// Menabung                   : di bawah Rp 1 juta masuk Pengeluaran; Rp 1 juta ke atas
+//                              hanya muncul di Arus besar agar tidak dihitung dua kali.
+const PEMINDAHAN_KAS = ['tarik_tunai', 'setor_tunai']
+const menabungBesar = r => r.category === 'menabung' && (Number(r.debit) || 0) >= BATAS_BESAR
+const hitungSebagaiKeluar = r =>
+  Number(r.debit) > 0 && !PEMINDAHAN_KAS.includes(r.category) && !menabungBesar(r)
+const hitungSebagaiMasuk = r =>
+  Number(r.credit) > 0 && !PEMINDAHAN_KAS.includes(r.category)
+
 function nilaiMetrik(r, metrik) {
   const d = Number(r.debit) || 0, c = Number(r.credit) || 0
-  if (metrik === 'pengeluaran') return r.category === 'menabung' ? 0 : d
+  if (metrik === 'pengeluaran') return hitungSebagaiKeluar(r) ? d : 0
+  if (metrik === 'pemasukan')   return hitungSebagaiMasuk(r) ? c : 0
   if (metrik === 'besar')       { const v = Math.max(d, c); return v >= BATAS_BESAR ? v : 0 }
-  if (metrik === 'pemasukan')   return c
   if (metrik === 'tabungan')    return r.category === 'menabung' ? d : (r.category === 'ambil_tabungan' ? -c : 0)
   return c - d
 }
@@ -646,8 +655,8 @@ document.querySelectorAll('.metrikBtn').forEach(b => b.onclick = () => {
 })
 
 function gambarHighlight(baris) {
-  const keluar = baris.filter(r => Number(r.debit) > 0 && r.category !== 'menabung').sort((a,b) => b.debit - a.debit)
-  const masuk  = baris.filter(r => Number(r.credit) > 0).sort((a,b) => b.credit - a.credit)
+  const keluar = baris.filter(hitungSebagaiKeluar).sort((a,b) => b.debit - a.debit)
+  const masuk  = baris.filter(hitungSebagaiMasuk).sort((a,b) => b.credit - a.credit)
   const kartu = (judul, r, kolom, warna) => !r
     ? '<div class="px-4 py-3 border-b border-neutral-100 last:border-0"><p class="text-[11px] font-medium text-neutral-500">'+judul+'</p><p class="text-sm text-neutral-400 mt-0.5">Tidak ada data</p></div>'
     : '<div class="px-4 py-3 border-b border-neutral-100 last:border-0">' +
@@ -676,8 +685,8 @@ async function gambarTabelPengguna() {
   semuaBaris.forEach(r => {
     const k = r.user_id
     if (!agg[k]) agg[k] = { keluar:0, masuk:0, maxKeluar:0, maxMasuk:0 }
-    const d = r.category === 'menabung' ? 0 : (Number(r.debit)||0)
-    const c = Number(r.credit)||0
+    const d = hitungSebagaiKeluar(r) ? (Number(r.debit)||0) : 0
+    const c = hitungSebagaiMasuk(r)  ? (Number(r.credit)||0) : 0
     agg[k].keluar += d; agg[k].masuk += c
     if (d > agg[k].maxKeluar) agg[k].maxKeluar = d
     if (c > agg[k].maxMasuk)  agg[k].maxMasuk = c

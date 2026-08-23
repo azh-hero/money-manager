@@ -46,6 +46,10 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
       Dashboard
     </a>
+    <a id="menuUsers" href="users.html" class="hidden flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium text-neutral-950">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      User Setting
+    </a>
     <button id="menuLogout" class="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-medium text-neutral-950">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
       Log out
@@ -230,6 +234,7 @@ document.getElementById('barRole').textContent =
 
 if (profile.role === 'admin' || profile.role === 'superadmin') {
   document.getElementById('menuDashboard').classList.remove('hidden')
+  document.getElementById('menuUsers').classList.remove('hidden')
 }
 
 // ---------- Menu ----------

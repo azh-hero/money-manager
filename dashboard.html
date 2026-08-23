@@ -18,14 +18,13 @@
 </head>
 <body class="bg-neutral-50 min-h-screen">
 
-<!-- TOP BAR -->
 <header class="bg-white border-b border-neutral-200">
   <div class="flex items-center gap-3 px-5 py-3.5 md:px-8">
     <a href="app.html" class="md:hidden" aria-label="Kembali">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
     </a>
     <div class="hidden md:flex items-center gap-3">
-      <div class="bg-neutral-100 rounded-full px-3 py-2">
+      <div id="avatarWrap" class="rounded-full px-3 py-2 bg-neutral-100">
         <span id="avatar" class="text-[13px] font-semibold text-neutral-700">–</span>
       </div>
       <div>
@@ -37,7 +36,6 @@
     <div class="hidden md:block flex-1"></div>
     <a href="app.html" class="hidden md:block rounded-lg border border-neutral-200 px-3 py-2 text-[13px] font-medium text-neutral-950">Catat transaksi</a>
   </div>
-
   <div class="flex gap-1 px-4 md:px-8 -mb-px overflow-x-auto">
     <button data-tab="overview" class="tabBtn shrink-0 px-4 py-2.5 text-sm font-semibold text-neutral-950 border-b-2 border-neutral-900">Overview</button>
     <button data-tab="riwayat" class="tabBtn shrink-0 px-4 py-2.5 text-sm font-medium text-neutral-500 border-b-2 border-transparent">Riwayat Transaksi</button>
@@ -54,33 +52,63 @@
       <h2 class="hidden md:block text-[26px] font-bold text-neutral-950">Overview</h2>
       <p class="hidden md:block text-sm text-neutral-500 mt-0.5">Ringkasan aktivitas keuangan pada periode terpilih.</p>
     </div>
-    <select id="periode" class="w-full md:w-auto rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
-      <option value="hari">Hari ini</option>
-      <option value="7hari">7 hari terakhir</option>
-      <option value="bulan">Bulan berjalan</option>
-      <option value="30hari" selected>30 hari terakhir</option>
-      <option value="90hari">90 hari terakhir</option>
-      <option value="tahun">Tahun berjalan</option>
-      <option value="setahun">Setahun ke belakang</option>
-    </select>
+    <div class="flex gap-2">
+      <div class="relative flex-1 md:flex-none">
+        <button id="btnUserOv" class="w-full flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="labelUserOv" class="flex-1 text-left truncate">…</span>
+          <span id="badgeUserOv" class="rounded-[5px] bg-neutral-900 px-1.5 text-[10px] font-bold text-neutral-50">1</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="popUserOv" class="hidden absolute z-30 mt-1.5 w-60 rounded-[10px] border border-neutral-200 bg-white p-1.5 shadow-lg">
+          <p class="px-2.5 py-1.5 text-[9px] font-bold tracking-wide text-neutral-400">TAMPILKAN DATA PENGGUNA</p>
+          <div id="daftarUserOv"></div>
+          <div class="my-1 h-px bg-neutral-200"></div>
+          <p class="px-2.5 py-1 text-[10px] text-neutral-400">Hanya mempengaruhi kartu saldo, grafik, dan highlight.</p>
+        </div>
+      </div>
+      <select id="periode" class="flex-1 md:flex-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <option value="hari">Hari ini</option><option value="7hari">7 hari terakhir</option>
+        <option value="bulan">Bulan berjalan</option><option value="30hari" selected>30 hari terakhir</option>
+        <option value="90hari">90 hari terakhir</option><option value="tahun">Tahun berjalan</option>
+        <option value="setahun">Setahun ke belakang</option>
+      </select>
+    </div>
   </div>
 
-  <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
-      <p class="text-[11px] font-medium text-neutral-500">Saldo cash</p>
-      <p id="kSaldoCash" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+  <!-- kartu utama -->
+  <div class="mt-4 grid grid-cols-2 gap-2.5 md:gap-4">
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-[18px] md:py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="13" height="13" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+        <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo cash</p>
+      </div>
+      <p id="kSaldoCash" class="text-[18px] md:text-[26px] font-bold text-neutral-950 mt-1">Rp 0</p>
     </div>
-    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
-      <p class="text-[11px] font-medium text-neutral-500">Saldo virtual</p>
-      <p id="kSaldoVirtual" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-[18px] md:py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="13" height="13" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+        <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo virtual</p>
+      </div>
+      <p id="kSaldoVirtual" class="text-[18px] md:text-[26px] font-bold text-neutral-950 mt-1">Rp 0</p>
     </div>
-    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
-      <p class="text-[11px] font-medium text-neutral-500">Total saldo</p>
-      <p id="kSaldoTotal" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+  </div>
+
+  <!-- strip subtle -->
+  <div class="mt-2.5 md:mt-4 flex items-center rounded-xl border border-neutral-200 bg-white px-1 md:px-2.5 py-2.5 md:py-3">
+    <div class="flex-1 text-center">
+      <p class="text-[10px] md:text-[11px] text-neutral-400">Total saldo</p>
+      <p id="kSaldoTotal" class="text-[13px] md:text-[15px] font-semibold text-neutral-700">Rp 0</p>
     </div>
-    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3">
-      <p class="text-[11px] font-medium text-neutral-500">Total tabungan</p>
-      <p id="kTabungan" class="text-base md:text-xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    <div class="w-px h-[26px] md:h-[30px] bg-neutral-200"></div>
+    <div class="flex-1 text-center">
+      <p class="text-[10px] md:text-[11px] text-neutral-400">Tabungan</p>
+      <p id="kTabungan" class="text-[13px] md:text-[15px] font-semibold text-neutral-700">Rp 0</p>
+    </div>
+    <div class="w-px h-[26px] md:h-[30px] bg-neutral-200"></div>
+    <div class="flex-1 text-center">
+      <p class="text-[10px] md:text-[11px] text-neutral-400">Total aset</p>
+      <p id="kAset" class="text-[13px] md:text-[15px] font-bold text-neutral-950">Rp 0</p>
     </div>
   </div>
 
@@ -89,15 +117,14 @@
       <p class="flex-1 text-sm md:text-base font-semibold text-neutral-950">Transaksi berdasarkan waktu</p>
       <p id="labelSumbu" class="text-[11px] text-neutral-400"></p>
     </div>
-    <p class="text-[10px] md:text-[11px] text-neutral-400 mt-0.5">Batang: total seluruh pengguna. Garis: nilai masing-masing pengguna. Satuan rupiah.</p>
-
-    <div class="mt-3 flex gap-0.5 rounded-[9px] bg-neutral-100 p-[3px]">
-      <button data-metrik="pengeluaran" class="metrikBtn flex-1 rounded-[7px] bg-white px-2 py-1.5 text-[11px] md:text-[13px] font-semibold text-neutral-950 shadow-sm">Pengeluaran</button>
-      <button data-metrik="pemasukan"   class="metrikBtn flex-1 rounded-[7px] px-2 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Pemasukan</button>
-      <button data-metrik="tabungan"    class="metrikBtn flex-1 rounded-[7px] px-2 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Tabungan</button>
-      <button data-metrik="saldo"       class="metrikBtn flex-1 rounded-[7px] px-2 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo</button>
+    <p class="text-[10px] md:text-[11px] text-neutral-400 mt-0.5">Batang: total seluruh pengguna terpilih. Garis: nilai masing-masing pengguna. Satuan rupiah.</p>
+    <div class="mt-3 flex gap-0.5 rounded-[9px] bg-neutral-100 p-[3px] overflow-x-auto">
+      <button data-metrik="pengeluaran" class="metrikBtn shrink-0 md:flex-1 rounded-[7px] bg-white px-2.5 py-1.5 text-[11px] md:text-[13px] font-semibold text-neutral-950 shadow-sm">Pengeluaran</button>
+      <button data-metrik="besar"       class="metrikBtn shrink-0 md:flex-1 rounded-[7px] px-2.5 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Pengeluaran besar</button>
+      <button data-metrik="pemasukan"   class="metrikBtn shrink-0 md:flex-1 rounded-[7px] px-2.5 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Pemasukan</button>
+      <button data-metrik="tabungan"    class="metrikBtn shrink-0 md:flex-1 rounded-[7px] px-2.5 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Tabungan</button>
+      <button data-metrik="saldo"       class="metrikBtn shrink-0 md:flex-1 rounded-[7px] px-2.5 py-1.5 text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo</button>
     </div>
-
     <div class="mt-3 h-64 md:h-80"><canvas id="grafik"></canvas></div>
   </div>
 
@@ -115,7 +142,7 @@
   <div class="mt-4 rounded-xl border border-neutral-200 bg-white overflow-hidden">
     <div class="px-4 py-2.5 bg-neutral-50 border-b border-neutral-200">
       <p class="text-sm font-semibold text-neutral-950">Ringkasan per pengguna</p>
-      <p class="text-[11px] text-neutral-400 mt-0.5">Kolom balance dan tabungan bersifat kumulatif sejak awal, bukan per periode.</p>
+      <p class="text-[11px] text-neutral-400 mt-0.5">Selalu menampilkan seluruh pengguna, tidak terpengaruh filter di atas. Kolom balance dan tabungan kumulatif sejak awal.</p>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full min-w-[980px]">
@@ -138,51 +165,29 @@
 
 <!-- ==================== RIWAYAT ==================== -->
 <section id="tabRiwayat" class="hidden">
-
   <div class="md:flex md:items-center md:gap-4">
     <div class="flex-1">
       <h2 class="hidden md:block text-[26px] font-bold text-neutral-950">Riwayat Transaksi</h2>
       <p id="subJudul" class="hidden md:block text-sm text-neutral-500 mt-0.5">Seluruh pencatatan pemasukan dan pengeluaran.</p>
     </div>
     <div class="mt-3 md:mt-0 flex flex-wrap items-center gap-2">
-      <select id="fTahun" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
-        <option value="">Semua tahun</option>
-      </select>
-      <select id="fBulan" disabled class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
-        <option value="">Bulan</option>
-      </select>
+      <select id="fTahun" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950"><option value="">Semua tahun</option></select>
+      <select id="fBulan" disabled class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950"><option value="">Bulan</option></select>
       <button id="resetPeriode" class="hidden items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         Nonaktifkan
       </button>
       <div class="hidden md:block w-2"></div>
-      <button id="exportCsv" class="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
-        CSV
+      <button id="exportCsv" class="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>CSV
       </button>
-      <button id="exportXlsx" class="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
-        Excel
+      <button id="exportXlsx" class="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>Excel
       </button>
     </div>
   </div>
 
-  <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-5 md:py-4">
-      <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo cash</p>
-      <p id="saldoCash" class="text-base md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
-    </div>
-    <div class="rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-5 md:py-4">
-      <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Saldo virtual</p>
-      <p id="saldoVirtual" class="text-base md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
-    </div>
-    <div class="col-span-2 md:col-span-1 rounded-xl border border-neutral-200 bg-white px-3.5 py-3 md:px-5 md:py-4">
-      <p class="text-[11px] md:text-[13px] font-medium text-neutral-500">Total saldo</p>
-      <p id="saldoTotal" class="text-base md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
-    </div>
-  </div>
-
-  <!-- Saldo per pengguna: tabel (desktop) -->
+  <!-- saldo per pengguna: tabel (desktop) -->
   <div class="hidden md:block mt-4 rounded-xl border border-neutral-200 bg-white overflow-hidden">
     <div class="flex items-center bg-neutral-50 border-b border-neutral-200 px-4 py-2.5">
       <p class="flex-1 text-sm font-semibold text-neutral-950">Saldo per pengguna</p>
@@ -193,16 +198,30 @@
     <div id="saldoUserTabel"></div>
   </div>
 
-  <!-- Saldo per pengguna: tab (mobile) -->
+  <!-- saldo per pengguna: tab (mobile) -->
   <div class="md:hidden mt-4 rounded-xl border border-neutral-200 bg-white p-3">
     <p class="text-[11px] font-medium text-neutral-500">Saldo per pengguna</p>
     <div id="saldoUserTabs" class="mt-2.5 flex gap-0.5 rounded-[9px] bg-neutral-100 p-[3px] overflow-x-auto"></div>
     <div id="saldoUserNilai" class="mt-2.5 flex gap-2"></div>
   </div>
 
+  <!-- toolbar -->
   <div class="mt-4 flex flex-wrap items-center gap-2">
     <span class="hidden md:inline text-[13px] font-medium text-neutral-500">Filter:</span>
-    <select id="filterUser" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950"><option value="">Semua user</option></select>
+    <div class="relative">
+      <button id="btnUserRw" class="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span id="labelUserRw" class="truncate max-w-[110px] text-left">…</span>
+        <span id="badgeUserRw" class="rounded-[5px] bg-neutral-900 px-1.5 text-[10px] font-bold text-neutral-50">1</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div id="popUserRw" class="hidden absolute z-30 mt-1.5 w-[280px] rounded-[10px] border border-neutral-200 bg-white p-1.5 shadow-lg">
+        <p class="px-2.5 py-1.5 text-[9px] font-bold tracking-wide text-neutral-400">TAMPILKAN DATA PENGGUNA</p>
+        <div id="daftarUserRw"></div>
+        <div class="my-1 h-px bg-neutral-200"></div>
+        <p class="px-2.5 py-1 text-[10px] text-neutral-400">Mempengaruhi tabel, kartu saldo, dan saldo per pengguna.</p>
+      </div>
+    </div>
     <select id="filterKategori" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
       <option value="">Semua kategori</option>
       <option value="income">Income</option><option value="setor_tunai">Setor tunai</option>
@@ -220,9 +239,8 @@
       <option value="credit|false">Kredit terbesar</option><option value="credit|true">Kredit terkecil</option>
     </select>
     <div class="flex-1"></div>
-    <button id="tombolTambah" class="order-last md:order-none flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-2 text-[13px] font-medium text-neutral-50">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-      Tambah
+    <button id="tombolTambah" class="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-2 text-[13px] font-medium text-neutral-50">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Tambah
     </button>
     <span class="hidden md:inline text-[13px] text-neutral-500">Tampilkan</span>
     <select id="jumlahTampil" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
@@ -231,12 +249,40 @@
     </select>
   </div>
 
+  <!-- kartu saldo -->
+  <div class="mt-4 grid grid-cols-3 gap-2 md:gap-4">
+    <div class="rounded-[10px] md:rounded-xl border border-neutral-200 bg-white px-2.5 py-2.5 md:px-5 md:py-4">
+      <div class="flex items-center gap-1">
+        <svg width="11" height="11" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+        <p class="text-[9px] md:text-[13px] font-medium text-neutral-500">Saldo cash</p>
+      </div>
+      <p id="saldoCash" class="text-[13px] md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+      <p class="hidden md:block text-xs text-neutral-400 mt-0.5">Dompet tunai</p>
+    </div>
+    <div class="rounded-[10px] md:rounded-xl border border-neutral-200 bg-white px-2.5 py-2.5 md:px-5 md:py-4">
+      <div class="flex items-center gap-1">
+        <svg width="11" height="11" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+        <p class="text-[9px] md:text-[13px] font-medium text-neutral-500">Saldo virtual</p>
+      </div>
+      <p id="saldoVirtual" class="text-[13px] md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+      <p class="hidden md:block text-xs text-neutral-400 mt-0.5">Rekening &amp; e-wallet</p>
+    </div>
+    <div class="rounded-[10px] md:rounded-xl border border-neutral-200 bg-white px-2.5 py-2.5 md:px-5 md:py-4">
+      <div class="flex items-center gap-1">
+        <svg width="11" height="11" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7V4H6l6 8-6 8h12v-3"/></svg>
+        <p class="text-[9px] md:text-[13px] font-medium text-neutral-500">Total saldo</p>
+      </div>
+      <p id="saldoTotal" class="text-[13px] md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+      <p class="hidden md:block text-xs text-neutral-400 mt-0.5">Gabungan cash + virtual</p>
+    </div>
+  </div>
+
   <p class="md:hidden mt-3 flex items-center gap-1.5 text-[10px] text-neutral-400">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A1A1A1" stroke-width="1.8" stroke-linecap="round"><path d="m9 18 6-6-6-6"/><path d="m15 18 6-6-6-6"/></svg>
     Geser ke samping untuk melihat kolom lain
   </p>
 
-  <div class="mt-2 md:mt-5 rounded-xl border border-neutral-200 bg-white overflow-hidden">
+  <div class="mt-2 md:mt-4 rounded-xl border border-neutral-200 bg-white overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full min-w-[1100px]">
         <thead><tr class="bg-neutral-50 border-b border-neutral-200">
@@ -262,26 +308,24 @@
 
 </main>
 
-<!-- ============ MODAL TAMBAH / EDIT TRANSAKSI ============ -->
+<!-- MODAL TAMBAH / EDIT -->
 <div id="modalTx" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center bg-neutral-950/50 overflow-y-auto">
   <div class="w-full md:max-w-[680px] bg-white rounded-t-2xl md:rounded-xl p-5 md:p-7 my-auto">
     <div class="flex items-start gap-3">
       <div class="flex-1">
         <p id="txJudul" class="text-[19px] md:text-xl font-bold text-neutral-950">Tambah transaksi</p>
-        <p id="txSub" class="text-[12px] md:text-[13px] text-neutral-500 mt-0.5">Seluruh detail diisi dalam satu form, tanpa langkah konfirmasi.</p>
+        <p id="txSub" class="text-[12px] md:text-[13px] text-neutral-500 mt-0.5">Seluruh detail diisi dalam satu form.</p>
       </div>
       <button id="txTutup" class="rounded-lg p-1.5" aria-label="Tutup">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>
-
     <div id="txKunci" class="hidden mt-4 rounded-[10px] border border-orange-200 bg-orange-50 px-4 py-3">
-      <p class="text-xs text-orange-800">Transaksi ini berpasangan (tarik tunai / setor tunai). Hanya tanggal, waktu, dan nama transaksi yang bisa diubah, dan perubahannya berlaku untuk kedua baris.</p>
+      <p class="text-xs text-orange-800">Transaksi ini berpasangan. Hanya tanggal, waktu, dan nama yang bisa diubah, dan berlaku untuk kedua baris.</p>
     </div>
     <div id="txError" class="hidden mt-4 rounded-[10px] border border-red-200 bg-red-50 px-4 py-3">
       <p id="txErrorTeks" class="text-sm text-red-700"></p>
     </div>
-
     <div class="mt-5 space-y-3.5">
       <div id="grupJumlah" class="space-y-2">
         <label class="block text-[13px] font-medium text-neutral-950">Jumlah</label>
@@ -290,35 +334,32 @@
           <input id="txJumlah" type="text" inputmode="numeric" placeholder="0" class="flex-1 w-full text-[26px] font-semibold text-neutral-950 placeholder:text-neutral-400 outline-none">
         </div>
       </div>
-
       <div class="md:flex md:gap-3.5 space-y-3.5 md:space-y-0">
         <div id="grupArah" class="flex-1 space-y-2">
           <label class="block text-[13px] font-medium text-neutral-950">Transaksi</label>
           <div class="flex gap-2">
-            <button data-arah="plus"  class="pArah flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Tambah</button>
+            <button data-arah="plus" class="pArah flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Tambah</button>
             <button data-arah="minus" class="pArah flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Kurangi</button>
           </div>
         </div>
         <div id="grupJenis" class="flex-1 space-y-2">
           <label class="block text-[13px] font-medium text-neutral-950">Jenis transaksi</label>
           <div class="flex gap-2">
-            <button data-jenis="cash"    class="pJenis flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Cash</button>
+            <button data-jenis="cash" class="pJenis flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Cash</button>
             <button data-jenis="virtual" class="pJenis flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Virtual</button>
           </div>
         </div>
       </div>
-
       <div id="grupMetode" class="hidden space-y-2">
         <div class="flex items-center gap-2">
           <label class="flex-1 text-[13px] font-medium text-neutral-950">Metode</label>
           <span class="text-[11px] text-neutral-400">wajib dipilih</span>
         </div>
         <div class="flex gap-2">
-          <button data-metode="qris"     class="pMetode flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">QRIS</button>
+          <button data-metode="qris" class="pMetode flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">QRIS</button>
           <button data-metode="transfer" class="pMetode flex-1 rounded-lg border border-neutral-200 py-2.5 text-[13px] font-medium text-neutral-950">Transfer</button>
         </div>
       </div>
-
       <div class="flex gap-3.5">
         <div class="flex-1 space-y-2">
           <label class="block text-[13px] font-medium text-neutral-950">Tanggal</label>
@@ -329,7 +370,6 @@
           <input id="txWaktu" type="time" class="w-full rounded-lg border border-neutral-200 px-3.5 py-2.5 text-sm text-neutral-950">
         </div>
       </div>
-
       <div class="md:flex md:gap-3.5 space-y-3.5 md:space-y-0">
         <div class="flex-1 space-y-2">
           <label class="block text-[13px] font-medium text-neutral-950">Nama transaksi</label>
@@ -341,7 +381,6 @@
         </div>
       </div>
     </div>
-
     <div class="mt-6 flex gap-3 md:justify-end">
       <button id="txBatal" class="flex-1 md:flex-none rounded-lg border border-neutral-200 bg-white px-5 py-3 text-[15px] md:text-sm font-medium text-neutral-950">Batal</button>
       <button id="txSimpan" class="flex-1 md:flex-none rounded-lg bg-neutral-900 px-6 py-3 text-[15px] md:text-sm font-medium text-neutral-50 disabled:opacity-50">Simpan transaksi</button>
@@ -349,19 +388,19 @@
   </div>
 </div>
 
-<!-- ============ MODAL AKSI BARIS ============ -->
+<!-- MODAL AKSI -->
 <div id="modalAksi" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center bg-neutral-950/50">
   <div class="w-full md:max-w-sm bg-white rounded-t-2xl md:rounded-xl p-5">
     <p class="text-[17px] font-semibold text-neutral-950">Aksi transaksi</p>
     <p id="modalNama" class="text-sm text-neutral-500 mt-1"></p>
     <div id="modalPeringatan" class="hidden mt-3 rounded-[10px] border border-orange-200 bg-orange-50 px-3.5 py-2.5">
-      <p class="text-xs text-orange-800">Transaksi ini punya baris pasangan. Tindakan ini otomatis berlaku untuk keduanya.</p>
+      <p class="text-xs text-orange-800">Transaksi ini punya baris pasangan. Tindakan ini berlaku untuk keduanya.</p>
     </div>
     <div class="mt-4 space-y-2">
-      <button id="aksiEdit"     class="w-full rounded-lg border border-neutral-200 bg-white py-3 text-[15px] font-medium text-neutral-950">Edit data</button>
+      <button id="aksiEdit" class="w-full rounded-lg border border-neutral-200 bg-white py-3 text-[15px] font-medium text-neutral-950">Edit data</button>
       <button id="aksiNonaktif" class="w-full rounded-lg border border-neutral-200 bg-white py-3 text-[15px] font-medium text-neutral-950">Nonaktifkan</button>
-      <button id="aksiHapus"    class="w-full rounded-lg border border-red-200 bg-white py-3 text-[15px] font-medium text-red-700">Hapus</button>
-      <button id="aksiBatal"    class="w-full rounded-lg bg-neutral-100 py-3 text-[15px] font-medium text-neutral-950">Batal</button>
+      <button id="aksiHapus" class="w-full rounded-lg border border-red-200 bg-white py-3 text-[15px] font-medium text-red-700">Hapus</button>
+      <button id="aksiBatal" class="w-full rounded-lg bg-neutral-100 py-3 text-[15px] font-medium text-neutral-950">Batal</button>
     </div>
   </div>
 </div>
@@ -373,6 +412,7 @@ const profile = await requireDashboardAccess()
 if (!profile) throw new Error('tidak berhak')
 
 document.getElementById('avatar').textContent  = initials(profile.nama)
+document.getElementById('avatarWrap').style.backgroundColor = profile.warna || '#F5F5F5'
 document.getElementById('barNama').textContent = profile.nama
 document.getElementById('barRole').textContent = profile.role === 'superadmin' ? 'Superadmin' : 'Admin'
 
@@ -388,7 +428,7 @@ const KATEGORI = {
 }
 const HANYA_VIRTUAL = ['setor_tunai','tarik_tunai']
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
-const WARNA_GARIS = ['#F9D26B','#F4B5C5','#A3A3A3','#737373','#D4D4D4']
+const BATAS_BESAR = 1000000
 
 const tanggalTampil = iso => {
   const d = new Date(iso)
@@ -409,7 +449,12 @@ async function ambilSemua(bangun) {
   return hasil
 }
 
-// ==================== TAB ====================
+// ---------- daftar pengguna ----------
+const { data: semuaProfil } = await supabase.from('profiles').select('id, nama, warna').order('nama')
+const PROFIL = semuaProfil || []
+const warnaUser = id => (PROFIL.find(p => p.id === id) || {}).warna || '#C4CBD6'
+
+// ---------- tab ----------
 document.querySelectorAll('.tabBtn').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabBtn').forEach(x => {
     const on = x === b
@@ -421,15 +466,70 @@ document.querySelectorAll('.tabBtn').forEach(b => b.onclick = () => {
   document.getElementById('tabRiwayat').classList.toggle('hidden', b.dataset.tab !== 'riwayat')
 })
 
+// ---------- filter pengguna (dipakai dua kali) ----------
+function buatFilterUser(idTombol, idPopover, idDaftar, idLabel, idBadge, terpilih, saatUbah) {
+  const tombol = document.getElementById(idTombol)
+  const pop = document.getElementById(idPopover)
+  const daftar = document.getElementById(idDaftar)
+
+  function gambar() {
+    const semua = terpilih.size === PROFIL.length
+    daftar.innerHTML =
+      '<button data-semua="1" class="itemUser w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left">' +
+        kotakHtml(semua) + '<span class="flex-1 text-[13px] ' + (semua?'font-semibold text-neutral-950':'text-neutral-700') + '">Semua pengguna</span></button>' +
+      PROFIL.map(p => {
+        const on = terpilih.has(p.id)
+        return '<button data-id="'+p.id+'" class="itemUser w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left">' +
+          kotakHtml(on) +
+          '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:'+p.warna+'"></span>' +
+          '<span class="flex-1 text-[13px] truncate ' + (on?'font-semibold text-neutral-950':'text-neutral-700') + '">'+p.nama+'</span></button>'
+      }).join('')
+
+    daftar.querySelectorAll('.itemUser').forEach(b => b.onclick = () => {
+      if (b.dataset.semua) {
+        if (terpilih.size === PROFIL.length) { terpilih.clear(); terpilih.add(profile.id) }
+        else PROFIL.forEach(p => terpilih.add(p.id))
+      } else {
+        const id = b.dataset.id
+        if (terpilih.has(id)) { if (terpilih.size > 1) terpilih.delete(id) }
+        else terpilih.add(id)
+      }
+      gambar(); perbaruiLabel(); saatUbah()
+    })
+  }
+  function kotakHtml(on) {
+    return on
+      ? '<span class="w-[15px] h-[15px] shrink-0 rounded-[4px] bg-neutral-900 flex items-center justify-center">' +
+        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'
+      : '<span class="w-[15px] h-[15px] shrink-0 rounded-[4px] border border-neutral-300"></span>'
+  }
+  function perbaruiLabel() {
+    const l = document.getElementById(idLabel), b = document.getElementById(idBadge)
+    if (terpilih.size === PROFIL.length) l.textContent = 'Semua pengguna'
+    else if (terpilih.size === 1) {
+      const p = PROFIL.find(x => terpilih.has(x.id))
+      l.textContent = p ? p.nama : '—'
+    } else l.textContent = terpilih.size + ' pengguna'
+    b.textContent = terpilih.size
+  }
+
+  tombol.onclick = e => { e.stopPropagation(); pop.classList.toggle('hidden') }
+  pop.onclick = e => e.stopPropagation()
+  document.addEventListener('click', () => pop.classList.add('hidden'))
+  gambar(); perbaruiLabel()
+}
+
+const userOv = new Set([profile.id])
+const userRw = new Set([profile.id])
+const arr = s => Array.from(s)
+const semuaTerpilih = s => s.size === PROFIL.length
+
 // ==================== OVERVIEW ====================
 const JAM = 3600000, HARI = 86400000
-let metrikAktif = 'pengeluaran'
-let grafik = null
-let barisOverview = []
+let metrikAktif = 'pengeluaran', grafik = null, barisOverview = []
 
 function infoPeriode(k) {
-  const kini = new Date()
-  const awal = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate())
+  const kini = new Date(), awal = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate())
   switch (k) {
     case 'hari':    return { mulai:awal, langkah:JAM, format:d=>String(d.getHours()).padStart(2,'0')+':00', sumbu:'per jam' }
     case '7hari':   return { mulai:new Date(awal.getTime()-6*HARI), langkah:4*JAM, format:d=>d.getDate()+'/'+(d.getMonth()+1)+' '+String(d.getHours()).padStart(2,'0')+':00', sumbu:'per 4 jam' }
@@ -441,9 +541,11 @@ function infoPeriode(k) {
   }
 }
 
+// Menabung tidak dihitung sebagai pengeluaran — dia berpindah ke tabungan, bukan dibelanjakan.
 function nilaiMetrik(r, metrik) {
   const d = Number(r.debit) || 0, c = Number(r.credit) || 0
-  if (metrik === 'pengeluaran') return d
+  if (metrik === 'pengeluaran') return r.category === 'menabung' ? 0 : d
+  if (metrik === 'besar')       return (r.category !== 'menabung' && d >= BATAS_BESAR) ? d : 0
   if (metrik === 'pemasukan')   return c
   if (metrik === 'tabungan')    return r.category === 'menabung' ? d : (r.category === 'ambil_tabungan' ? -c : 0)
   return c - d
@@ -453,26 +555,30 @@ async function muatOverview() {
   const p = infoPeriode(document.getElementById('periode').value)
   document.getElementById('labelSumbu').textContent = 'sumbu ' + p.sumbu
 
-  const { data: saldo } = await supabase.rpc('saldo_periode', { p_tahun: null, p_bulan: null })
+  const users = semuaTerpilih(userOv) ? null : arr(userOv)
+  const { data: saldo } = await supabase.rpc('saldo_periode', { p_tahun:null, p_bulan:null, p_users:users })
   const s = Array.isArray(saldo) ? saldo[0] : saldo
   if (s) {
     document.getElementById('kSaldoCash').textContent    = 'Rp ' + rupiah(s.saldo_cash)
     document.getElementById('kSaldoVirtual').textContent = 'Rp ' + rupiah(s.saldo_virtual)
     document.getElementById('kSaldoTotal').textContent   = 'Rp ' + rupiah(s.saldo_total)
     document.getElementById('kTabungan').textContent     = 'Rp ' + rupiah(s.tabungan)
+    document.getElementById('kAset').textContent         = 'Rp ' + rupiah(Number(s.saldo_total) + Number(s.tabungan))
   }
 
   try {
-    barisOverview = await ambilSemua(() => supabase.from('transaction_ledger')
-      .select('id,occurred_at,user_id,user_nama,nama_transaksi,category,channel,method,debit,credit,is_active')
-      .eq('is_active', true)
-      .gte('occurred_at', p.mulai.toISOString())
-      .order('occurred_at', { ascending: true }))
+    barisOverview = await ambilSemua(() => {
+      let q = supabase.from('transaction_ledger')
+        .select('id,occurred_at,user_id,user_nama,nama_transaksi,category,channel,method,debit,credit,is_active')
+        .eq('is_active', true).gte('occurred_at', p.mulai.toISOString())
+      if (users) q = q.in('user_id', users)
+      return q.order('occurred_at', { ascending: true })
+    })
   } catch (e) { alert('Gagal memuat data: ' + e.message); return }
 
   gambarGrafik(p)
   gambarHighlight(barisOverview)
-  await gambarTabelPengguna(barisOverview)
+  await gambarTabelPengguna()
 }
 
 function gambarGrafik(p) {
@@ -481,31 +587,29 @@ function gambarGrafik(p) {
   const n = awalBucket.length
   const total = new Array(n).fill(0)
 
-  const hitung = {}
-  barisOverview.forEach(r => { hitung[r.user_nama] = (hitung[r.user_nama] || 0) + 1 })
-  const namaUser = Object.keys(hitung).sort((a,b) => hitung[b]-hitung[a]).slice(0,5)
-  const perUser = {}; namaUser.forEach(u => perUser[u] = new Array(n).fill(0))
+  const idUser = [...new Set(barisOverview.map(r => r.user_id))].slice(0, 6)
+  const perUser = {}; idUser.forEach(u => perUser[u] = new Array(n).fill(0))
 
   barisOverview.forEach(r => {
     let i = Math.floor((new Date(r.occurred_at).getTime() - p.mulai.getTime()) / p.langkah)
     if (i < 0) i = 0; if (i >= n) i = n - 1
     const v = nilaiMetrik(r, metrikAktif)
     total[i] += v
-    if (perUser[r.user_nama]) perUser[r.user_nama][i] += v
+    if (perUser[r.user_id]) perUser[r.user_id][i] += v
   })
 
   if (metrikAktif === 'saldo') {
-    let jml = 0
-    for (let i = 0; i < n; i++) { jml += total[i]; total[i] = jml }
-    namaUser.forEach(u => { let a = 0; for (let i = 0; i < n; i++) { a += perUser[u][i]; perUser[u][i] = a } })
+    let j = 0; for (let i = 0; i < n; i++) { j += total[i]; total[i] = j }
+    idUser.forEach(u => { let a = 0; for (let i = 0; i < n; i++) { a += perUser[u][i]; perUser[u][i] = a } })
   }
 
   const dataset = [{
-    type:'bar', label:'Total semua pengguna', data:total, backgroundColor:'#D4D4D4', borderWidth:0,
+    type:'bar', label:'Total pengguna terpilih', data:total, backgroundColor:'#D4D4D4', borderWidth:0,
     borderRadius:{ topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 }, borderSkipped:'bottom', order:2
-  }].concat(namaUser.map((u,i) => ({
-    type:'line', label:u, data:perUser[u], borderColor:WARNA_GARIS[i % WARNA_GARIS.length],
-    backgroundColor:'transparent', borderWidth:2, pointRadius:0, tension:0.4, borderCapStyle:'round', order:1
+  }].concat(idUser.map(u => ({
+    type:'line', label:(PROFIL.find(x => x.id === u) || {}).nama || '—',
+    data:perUser[u], borderColor:warnaUser(u), backgroundColor:'transparent',
+    borderWidth:2, pointRadius:0, tension:0.4, borderCapStyle:'round', order:1
   })))
 
   if (grafik) grafik.destroy()
@@ -539,7 +643,7 @@ document.querySelectorAll('.metrikBtn').forEach(b => b.onclick = () => {
 })
 
 function gambarHighlight(baris) {
-  const keluar = baris.filter(r => Number(r.debit) > 0).sort((a,b) => b.debit - a.debit)
+  const keluar = baris.filter(r => Number(r.debit) > 0 && r.category !== 'menabung').sort((a,b) => b.debit - a.debit)
   const masuk  = baris.filter(r => Number(r.credit) > 0).sort((a,b) => b.credit - a.credit)
   const kartu = (judul, r, kolom, warna) => !r
     ? '<div class="px-4 py-3 border-b border-neutral-100 last:border-0"><p class="text-[11px] font-medium text-neutral-500">'+judul+'</p><p class="text-sm text-neutral-400 mt-0.5">Tidak ada data</p></div>'
@@ -554,17 +658,28 @@ function gambarHighlight(baris) {
     kartu('Terbesar', masuk[0], 'credit', 'text-green-700') + kartu('Terkecil', masuk[masuk.length-1], 'credit', 'text-green-700')
 }
 
-async function gambarTabelPengguna(baris) {
-  const { data: ringkas } = await supabase.rpc('saldo_periode_user', { p_tahun:null, p_bulan:null })
+async function gambarTabelPengguna() {
+  const { data: ringkas } = await supabase.rpc('saldo_periode_user', { p_tahun:null, p_bulan:null, p_users:null })
+  const p = infoPeriode(document.getElementById('periode').value)
+  let semuaBaris = []
+  try {
+    semuaBaris = await ambilSemua(() => supabase.from('transaction_ledger')
+      .select('user_id,category,debit,credit')
+      .eq('is_active', true).gte('occurred_at', p.mulai.toISOString())
+      .order('occurred_at', { ascending: true }))
+  } catch (e) { semuaBaris = [] }
+
   const agg = {}
-  baris.forEach(r => {
+  semuaBaris.forEach(r => {
     const k = r.user_id
     if (!agg[k]) agg[k] = { keluar:0, masuk:0, maxKeluar:0, maxMasuk:0 }
-    const d = Number(r.debit)||0, c = Number(r.credit)||0
+    const d = r.category === 'menabung' ? 0 : (Number(r.debit)||0)
+    const c = Number(r.credit)||0
     agg[k].keluar += d; agg[k].masuk += c
     if (d > agg[k].maxKeluar) agg[k].maxKeluar = d
     if (c > agg[k].maxMasuk)  agg[k].maxMasuk = c
   })
+
   const tbody = document.getElementById('tbodyPengguna')
   if (!ringkas || !ringkas.length) {
     tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-sm text-neutral-400">Belum ada data.</td></tr>'; return
@@ -572,7 +687,8 @@ async function gambarTabelPengguna(baris) {
   tbody.innerHTML = ringkas.map(u => {
     const a = agg[u.user_id] || { keluar:0, masuk:0, maxKeluar:0, maxMasuk:0 }
     return '<tr class="border-b border-neutral-100 last:border-0">' +
-      '<td class="px-4 py-3 text-[13px] font-semibold text-neutral-950">'+u.nama+'</td>' +
+      '<td class="px-4 py-3"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:'+(u.warna||'#C4CBD6')+'"></span>' +
+        '<span class="text-[13px] font-semibold text-neutral-950">'+u.nama+'</span></div></td>' +
       '<td class="px-4 py-3 text-right text-[13px] text-red-700">'+(a.keluar?'Rp '+rupiah(a.keluar):'—')+'</td>' +
       '<td class="px-4 py-3 text-right text-[13px] text-green-700">'+(a.masuk?'Rp '+rupiah(a.masuk):'—')+'</td>' +
       '<td class="px-4 py-3 text-right text-xs text-neutral-500">'+(a.maxKeluar?'Rp '+rupiah(a.maxKeluar):'—')+'</td>' +
@@ -580,15 +696,15 @@ async function gambarTabelPengguna(baris) {
       '<td class="px-4 py-3 text-right text-xs text-neutral-500">Rp '+rupiah(u.saldo_cash)+'</td>' +
       '<td class="px-4 py-3 text-right text-xs text-neutral-500">Rp '+rupiah(u.saldo_virtual)+'</td>' +
       '<td class="px-4 py-3 text-right text-[13px] font-semibold text-neutral-950">Rp '+rupiah(u.saldo_total)+'</td>' +
-      '<td class="px-4 py-3 text-right text-[13px] font-semibold text-neutral-950">Rp '+rupiah(u.tabungan)+'</td></tr>'
+      '<td class="px-4 py-3 text-right text-[13px] font-bold" style="color:'+(u.warna?'#0A0A0A':'#0A0A0A')+'">' +
+        '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background:'+(u.warna||'#C4CBD6')+'"></span>Rp '+rupiah(u.tabungan)+'</span></td></tr>'
   }).join('')
 }
 
 document.getElementById('periode').onchange = muatOverview
 
-// ==================== FILTER PERIODE (RIWAYAT) ====================
-let periodeAda = []
-let fTahun = null, fBulan = null
+// ==================== FILTER PERIODE ====================
+let periodeAda = [], fTahun = null, fBulan = null
 
 async function muatPeriodeTersedia() {
   const { data } = await supabase.rpc('periode_tersedia')
@@ -597,42 +713,32 @@ async function muatPeriodeTersedia() {
   document.getElementById('fTahun').innerHTML =
     '<option value="">Semua tahun</option>' + tahun.map(t => '<option value="'+t+'">'+t+'</option>').join('')
 }
-
 function isiBulan() {
   const sel = document.getElementById('fBulan')
-  if (!fTahun) {
-    sel.innerHTML = '<option value="">Bulan</option>'; sel.disabled = true; sel.value = ''
-    return
-  }
+  if (!fTahun) { sel.innerHTML = '<option value="">Bulan</option>'; sel.disabled = true; sel.value=''; return }
   const bulan = periodeAda.filter(p => p.tahun === fTahun).map(p => p.bulan).sort((a,b) => a-b)
   sel.disabled = false
-  sel.innerHTML = '<option value="">Semua bulan</option>' +
-    bulan.map(b => '<option value="'+b+'">'+BULAN[b-1]+'</option>').join('')
+  sel.innerHTML = '<option value="">Semua bulan</option>' + bulan.map(b => '<option value="'+b+'">'+BULAN[b-1]+'</option>').join('')
   sel.value = fBulan || ''
 }
-
 function rentang() {
   if (!fTahun) return null
   const mulai   = fBulan ? new Date(fTahun, fBulan-1, 1) : new Date(fTahun, 0, 1)
   const selesai = fBulan ? new Date(fTahun, fBulan, 1)   : new Date(fTahun+1, 0, 1)
   return { mulai: mulai.toISOString(), selesai: selesai.toISOString() }
 }
-
 function perbaruiTampilanPeriode() {
   const aktif = !!fTahun
-  document.getElementById('resetPeriode').classList.toggle('hidden', !aktif)
-  document.getElementById('resetPeriode').classList.toggle('flex', aktif)
-  const b = document.getElementById('fBulan')
-  b.classList.toggle('border-neutral-900', aktif && !!fBulan)
+  const r = document.getElementById('resetPeriode')
+  r.classList.toggle('hidden', !aktif); r.classList.toggle('flex', aktif)
+  document.getElementById('fBulan').classList.toggle('border-neutral-900', aktif && !!fBulan)
   document.getElementById('subJudul').textContent = aktif
     ? 'Menampilkan data ' + (fBulan ? BULAN[fBulan-1] + ' ' : '') + fTahun +
       ' — seluruh saldo dan total di halaman ini mengikuti periode tersebut.'
     : 'Seluruh pencatatan pemasukan dan pengeluaran.'
 }
-
 document.getElementById('fTahun').onchange = e => {
-  fTahun = e.target.value ? parseInt(e.target.value,10) : null
-  fBulan = null
+  fTahun = e.target.value ? parseInt(e.target.value,10) : null; fBulan = null
   isiBulan(); perbaruiTampilanPeriode(); muatRiwayat()
 }
 document.getElementById('fBulan').onchange = e => {
@@ -640,8 +746,7 @@ document.getElementById('fBulan').onchange = e => {
   perbaruiTampilanPeriode(); muatRiwayat()
 }
 document.getElementById('resetPeriode').onclick = () => {
-  fTahun = null; fBulan = null
-  document.getElementById('fTahun').value = ''
+  fTahun = null; fBulan = null; document.getElementById('fTahun').value = ''
   isiBulan(); perbaruiTampilanPeriode(); muatRiwayat()
 }
 
@@ -649,31 +754,27 @@ document.getElementById('resetPeriode').onclick = () => {
 let sortKolom = 'occurred_at', sortNaik = false
 let barisSaatIni = [], saldoUser = [], userAktif = 0
 
-const { data: daftarUser } = await supabase.from('profiles').select('id, nama').order('nama')
-if (daftarUser) document.getElementById('filterUser').insertAdjacentHTML('beforeend',
-  daftarUser.map(u => '<option value="'+u.id+'">'+u.nama+'</option>').join(''))
-
 async function muatRiwayat() {
   const r = rentang()
+  const users = semuaTerpilih(userRw) ? null : arr(userRw)
 
-  const { data: saldo } = await supabase.rpc('saldo_periode', { p_tahun: fTahun, p_bulan: fBulan })
+  // Kartu saldo & saldo per pengguna hanya dipengaruhi periode + pilihan pengguna.
+  const { data: saldo } = await supabase.rpc('saldo_periode', { p_tahun:fTahun, p_bulan:fBulan, p_users:users })
   const s = Array.isArray(saldo) ? saldo[0] : saldo
   if (s) {
     document.getElementById('saldoCash').textContent    = 'Rp ' + rupiah(s.saldo_cash)
     document.getElementById('saldoVirtual').textContent = 'Rp ' + rupiah(s.saldo_virtual)
     document.getElementById('saldoTotal').textContent   = 'Rp ' + rupiah(s.saldo_total)
   }
-
-  const { data: perUser } = await supabase.rpc('saldo_periode_user', { p_tahun: fTahun, p_bulan: fBulan })
+  const { data: perUser } = await supabase.rpc('saldo_periode_user', { p_tahun:fTahun, p_bulan:fBulan, p_users:users })
   saldoUser = perUser || []
   gambarSaldoUser()
 
   const batas = parseInt(document.getElementById('jumlahTampil').value, 10)
   let q = supabase.from('transaction_ledger').select('*')
-  const fu = document.getElementById('filterUser').value
   const fk = document.getElementById('filterKategori').value
   const fj = document.getElementById('filterJenis').value
-  if (fu) q = q.eq('user_id', fu)
+  if (users) q = q.in('user_id', users)
   if (fk) q = q.eq('category', fk)
   if (fj) q = q.eq('channel', fj)
   if (r)  q = q.gte('occurred_at', r.mulai).lt('occurred_at', r.selesai)
@@ -695,23 +796,24 @@ function gambarSaldoUser() {
     : saldoUser.map(u =>
       '<div class="flex items-center border-b border-neutral-100 last:border-0 px-4 py-3">' +
         '<div class="flex-1 flex items-center gap-2.5">' +
-          '<span class="rounded-full bg-neutral-100 px-2.5 py-1.5 text-[11px] font-semibold text-neutral-700">'+initials(u.nama)+'</span>' +
+          '<span class="rounded-full px-2.5 py-1.5 text-[11px] font-semibold text-neutral-800" style="background:'+(u.warna||'#F5F5F5')+'">'+initials(u.nama)+'</span>' +
           '<span class="text-[13px] font-semibold text-neutral-950">'+u.nama+'</span></div>' +
         '<span class="w-[150px] text-right text-[13px] text-neutral-600">Rp '+rupiah(u.saldo_cash)+'</span>' +
         '<span class="w-[150px] text-right text-[13px] text-neutral-600">Rp '+rupiah(u.saldo_virtual)+'</span>' +
         '<span class="w-[150px] text-right text-[13px] font-bold text-neutral-950">Rp '+rupiah(u.saldo_total)+'</span>' +
       '</div>').join('')
 
-  const tabs = document.getElementById('saldoUserTabs')
-  const nilai = document.getElementById('saldoUserNilai')
-  if (saldoUser.length === 0) { tabs.innerHTML = ''; nilai.innerHTML = '<p class="text-sm text-neutral-400">Belum ada data.</p>'; return }
+  const tabs = document.getElementById('saldoUserTabs'), nilai = document.getElementById('saldoUserNilai')
+  if (saldoUser.length === 0) { tabs.innerHTML=''; nilai.innerHTML='<p class="text-sm text-neutral-400">Belum ada data.</p>'; return }
   if (userAktif >= saldoUser.length) userAktif = 0
 
   tabs.innerHTML = saldoUser.map((u,i) => {
     const on = i === userAktif
-    const pendek = u.nama.split(' ')[0] + (u.nama.split(' ')[1] ? ' ' + u.nama.split(' ')[1][0] + '.' : '')
-    return '<button data-i="'+i+'" class="userTab shrink-0 flex-1 rounded-[7px] px-2 py-1.5 text-[11px] whitespace-nowrap ' +
-      (on ? 'bg-white shadow-sm font-semibold text-neutral-950' : 'font-medium text-neutral-500') + '">'+pendek+'</button>'
+    const bagian = u.nama.split(' ')
+    const pendek = bagian[0] + (bagian[1] ? ' ' + bagian[1][0] + '.' : '')
+    return '<button data-i="'+i+'" class="userTab shrink-0 flex-1 flex items-center justify-center gap-1.5 rounded-[7px] px-2 py-1.5 text-[11px] whitespace-nowrap ' +
+      (on ? 'bg-white shadow-sm font-semibold text-neutral-950' : 'font-medium text-neutral-500') + '">' +
+      '<span class="w-2 h-2 rounded-full" style="background:'+(u.warna||'#C4CBD6')+'"></span>'+pendek+'</button>'
   }).join('')
   tabs.querySelectorAll('.userTab').forEach(b => b.onclick = () => { userAktif = parseInt(b.dataset.i,10); gambarSaldoUser() })
 
@@ -734,7 +836,8 @@ function gambarTabel() {
     const lemah = mati ? 'text-neutral-400' : 'text-neutral-500'
     return '<tr class="'+bg+' border-b border-neutral-200">' +
       '<td class="px-4 py-3 text-xs '+lemah+'">'+tanggalTampil(r.occurred_at)+'</td>' +
-      '<td class="px-4 py-3 text-xs '+lemah+'">'+r.user_nama+'</td>' +
+      '<td class="px-4 py-3 text-xs '+lemah+'"><span class="inline-flex items-center gap-1.5">' +
+        '<span class="w-2 h-2 rounded-full shrink-0" style="background:'+warnaUser(r.user_id)+'"></span>'+r.user_nama+'</span></td>' +
       '<td class="px-4 py-3"><span class="text-[13px] font-semibold '+utama+'">'+r.nama_transaksi+'</span>' +
         (r.pair_id ? '<span class="block text-[11px] text-neutral-400">pasangan otomatis</span>' : '') + '</td>' +
       '<td class="px-4 py-3"><span class="inline-block rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium '+(mati?'text-neutral-400':'text-neutral-700')+'">'+LABEL_KATEGORI[r.category]+'</span></td>' +
@@ -757,10 +860,10 @@ document.querySelectorAll('.sortBtn').forEach(b => b.onclick = () => {
 document.getElementById('sortMobile').onchange = e => {
   const [k, naik] = e.target.value.split('|'); sortKolom = k; sortNaik = naik === 'true'; muatRiwayat()
 }
-;['filterUser','filterKategori','filterJenis','jumlahTampil'].forEach(id =>
+;['filterKategori','filterJenis','jumlahTampil'].forEach(id =>
   document.getElementById(id).onchange = muatRiwayat)
 
-// ==================== MODAL AKSI ====================
+// ---------- modal aksi ----------
 let idAktif = null
 const modalAksi = document.getElementById('modalAksi')
 function bukaAksi(id) {
@@ -773,7 +876,6 @@ function bukaAksi(id) {
 }
 document.getElementById('aksiBatal').onclick = () => modalAksi.classList.add('hidden')
 modalAksi.onclick = e => { if (e.target === modalAksi) modalAksi.classList.add('hidden') }
-
 document.getElementById('aksiNonaktif').onclick = async () => {
   const b = barisSaatIni.find(x => x.id === idAktif)
   const { error } = await supabase.from('transactions').update({ is_active: !b.is_active }).eq('id', idAktif)
@@ -791,14 +893,13 @@ document.getElementById('aksiEdit').onclick = () => {
   bukaModalTx('edit', barisSaatIni.find(x => x.id === idAktif))
 }
 
-// ==================== MODAL TAMBAH / EDIT ====================
+// ---------- modal tambah/edit ----------
 const modalTx = document.getElementById('modalTx')
-let mode = 'tambah', barisEdit = null
-let dArah = null, dJenis = null, dMetode = null
+let mode = 'tambah', barisEdit = null, dArah = null, dJenis = null, dMetode = null
 
-function setAktifTombol(daftar, nilaiTerpilih, atribut) {
+function setAktifTombol(daftar, nilai, atribut) {
   daftar.forEach(b => {
-    const on = b.dataset[atribut] === nilaiTerpilih
+    const on = b.dataset[atribut] === nilai
     b.classList.toggle('bg-neutral-900', on); b.classList.toggle('border-neutral-900', on)
     b.classList.toggle('text-neutral-50', on); b.classList.toggle('text-neutral-950', !on)
   })
@@ -828,7 +929,6 @@ document.querySelectorAll('.pMetode').forEach(b => b.onclick = () => {
   if (b.disabled) return
   dMetode = b.dataset.metode; setAktifTombol([...document.querySelectorAll('.pMetode')], dMetode, 'metode')
 })
-
 function kunciField(kunci) {
   ;['pArah','pJenis','pMetode'].forEach(kelas =>
     document.querySelectorAll('.'+kelas).forEach(b => { b.disabled = kunci; b.classList.toggle('opacity-50', kunci) }))
@@ -837,14 +937,12 @@ function kunciField(kunci) {
   document.getElementById('grupJumlah').classList.toggle('opacity-50', kunci)
   document.getElementById('grupKategori').classList.toggle('opacity-50', kunci)
 }
-
 function bukaModalTx(m, baris) {
   mode = m; barisEdit = baris || null
   document.getElementById('txError').classList.add('hidden')
   const berpasangan = m === 'edit' && !!baris.pair_id
   document.getElementById('txKunci').classList.toggle('hidden', !berpasangan)
   kunciField(berpasangan)
-
   document.getElementById('txJudul').textContent = m === 'tambah' ? 'Tambah transaksi' : 'Edit transaksi'
   document.getElementById('txSub').textContent = m === 'tambah'
     ? 'Seluruh detail diisi dalam satu form, tanpa langkah konfirmasi.'
@@ -856,7 +954,8 @@ function bukaModalTx(m, baris) {
     document.getElementById('txJumlah').value = ''
     document.getElementById('txNama').value = ''
     const kini = new Date()
-    document.getElementById('txTanggal').value = kini.toISOString().slice(0,10)
+    document.getElementById('txTanggal').value =
+      kini.getFullYear()+'-'+String(kini.getMonth()+1).padStart(2,'0')+'-'+String(kini.getDate()).padStart(2,'0')
     document.getElementById('txWaktu').value = String(kini.getHours()).padStart(2,'0')+':'+String(kini.getMinutes()).padStart(2,'0')
     setAktifTombol([...document.querySelectorAll('.pArah')], null, 'arah')
     setAktifTombol([...document.querySelectorAll('.pJenis')], null, 'jenis')
@@ -877,7 +976,6 @@ function bukaModalTx(m, baris) {
   }
   modalTx.classList.remove('hidden')
 }
-
 document.getElementById('txJumlah').addEventListener('input', e => {
   const angka = e.target.value.replace(/\D/g,'')
   e.target.value = angka ? parseInt(angka,10).toLocaleString('id-ID') : ''
@@ -890,7 +988,6 @@ document.getElementById('txSimpan').onclick = async () => {
   const kotak = document.getElementById('txError'), teks = document.getElementById('txErrorTeks')
   kotak.classList.add('hidden')
   const gagal = p => { teks.textContent = p; kotak.classList.remove('hidden') }
-
   const jumlah   = parseInt(document.getElementById('txJumlah').value.replace(/\D/g,'') || '0', 10)
   const nama     = document.getElementById('txNama').value.trim()
   const tanggal  = document.getElementById('txTanggal').value
@@ -906,7 +1003,6 @@ document.getElementById('txSimpan').onclick = async () => {
     if (!dJenis) return gagal('Pilih Cash atau Virtual.')
     if (dJenis === 'virtual' && !dMetode) return gagal('Pilih metode QRIS atau Transfer.')
   }
-
   const tombol = document.getElementById('txSimpan')
   tombol.disabled = true; tombol.textContent = 'Menyimpan…'
   const waktuISO = new Date(tanggal + 'T' + waktu).toISOString()
@@ -928,7 +1024,6 @@ document.getElementById('txSimpan').onclick = async () => {
       debit: dArah === 'minus' ? jumlah : 0, credit: dArah === 'plus' ? jumlah : 0
     }).eq('id', barisEdit.id))
   }
-
   tombol.disabled = false
   tombol.textContent = mode === 'tambah' ? 'Simpan transaksi' : 'Simpan perubahan'
   if (error) {
@@ -942,7 +1037,7 @@ document.getElementById('txSimpan').onclick = async () => {
 
 async function segarkan() { await muatRiwayat(); await muatOverview() }
 
-// ==================== EXPORT ====================
+// ---------- export ----------
 const dataExport = () => barisSaatIni.map(r => ({
   'Tanggal & Waktu': tanggalTampil(r.occurred_at), 'User': r.user_nama,
   'Nama transaksi': r.nama_transaksi, 'Kategori': LABEL_KATEGORI[r.category],
@@ -952,7 +1047,6 @@ const dataExport = () => barisSaatIni.map(r => ({
 }))
 const namaBerkas = ext => 'riwayat-transaksi' +
   (fTahun ? '-' + fTahun + (fBulan ? '-' + String(fBulan).padStart(2,'0') : '') : '') + '.' + ext
-
 document.getElementById('exportCsv').onclick = () => {
   const rows = dataExport()
   if (!rows.length) return alert('Tidak ada data untuk diunduh.')
@@ -969,7 +1063,9 @@ document.getElementById('exportXlsx').onclick = () => {
   XLSX.writeFile(wb, namaBerkas('xlsx'))
 }
 
-// ==================== JALANKAN ====================
+// ---------- jalankan ----------
+buatFilterUser('btnUserOv','popUserOv','daftarUserOv','labelUserOv','badgeUserOv', userOv, muatOverview)
+buatFilterUser('btnUserRw','popUserRw','daftarUserRw','labelUserRw','badgeUserRw', userRw, muatRiwayat)
 await muatPeriodeTersedia()
 isiBulan(); perbaruiTampilanPeriode()
 await muatOverview()

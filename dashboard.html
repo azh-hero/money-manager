@@ -209,6 +209,7 @@
       <option value="ambil_tabungan">Ambil tabungan</option><option value="roi">ROI</option>
       <option value="expenses">Expenses</option><option value="tarik_tunai">Tarik tunai</option>
       <option value="menabung">Menabung</option><option value="capex">Capex</option>
+      <option value="pindah_aset">Pindah aset</option>
     </select>
     <select id="filterJenis" class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] text-neutral-950">
       <option value="">Semua jenis</option><option value="cash">Cash</option><option value="virtual">Virtual</option>
@@ -377,7 +378,8 @@ document.getElementById('barRole').textContent = profile.role === 'superadmin' ?
 
 const LABEL_KATEGORI = {
   income:'Income', setor_tunai:'Setor tunai', ambil_tabungan:'Ambil tabungan', roi:'ROI',
-  expenses:'Expenses', tarik_tunai:'Tarik tunai', menabung:'Menabung', capex:'Capex'
+  expenses:'Expenses', tarik_tunai:'Tarik tunai', menabung:'Menabung', capex:'Capex',
+  pindah_aset:'Pindah aset'
 }
 const LABEL_METODE = { qris:'QRIS', transfer:'Transfer' }
 const KATEGORI = {

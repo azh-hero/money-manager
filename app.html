@@ -15,7 +15,7 @@
 </head>
 <body class="bg-neutral-50 min-h-screen">
 
-<!-- ================= TOP BAR ================= -->
+<!-- TOP BAR -->
 <header class="bg-white border-b border-neutral-200">
   <div class="flex items-center gap-3 px-5 py-3.5 md:px-8">
     <div class="bg-neutral-100 rounded-full px-3 py-2">
@@ -31,7 +31,7 @@
   </div>
 </header>
 
-<!-- ================= MENU DRAWER ================= -->
+<!-- MENU -->
 <div id="overlay" class="hidden fixed inset-0 bg-neutral-950/50 z-40"></div>
 <aside id="drawer" class="hidden fixed top-0 right-0 h-full w-72 bg-white z-50 p-5 rounded-l-2xl">
   <div class="flex items-center gap-2">
@@ -58,19 +58,13 @@
 
 <main class="px-5 py-6 md:px-8 md:py-10">
 
-<!-- ================= VIEW 1 — MAIN SCREEN ================= -->
+<!-- ============ VIEW 1 — MAIN ============ -->
 <section id="viewMain" class="w-full max-w-md mx-auto md:bg-white md:border md:border-neutral-200 md:rounded-xl md:p-8 md:shadow-sm">
-
   <div class="hidden md:block mb-6">
     <h1 class="text-[22px] font-bold text-neutral-950">Catat transaksi</h1>
     <p class="text-sm text-neutral-500 mt-1">Isi jumlah, lalu pilih jenis transaksi dan metodenya.</p>
   </div>
 
-  <div id="errMain" class="hidden mb-5 rounded-[10px] border border-red-200 bg-red-50 px-4 py-3">
-    <p id="errMainTeks" class="text-sm text-red-700"></p>
-  </div>
-
-  <!-- Jumlah -->
   <label class="block text-sm font-medium text-neutral-950">Jumlah</label>
   <div class="mt-2 flex items-center gap-2.5 rounded-[10px] border border-neutral-200 bg-white px-4 py-4">
     <span class="text-lg font-medium text-neutral-500">Rp</span>
@@ -78,27 +72,41 @@
       class="flex-1 w-full text-[28px] font-semibold text-neutral-950 placeholder:text-neutral-400 outline-none">
   </div>
 
-  <!-- Transaksi -->
   <div class="mt-6 flex items-center gap-2">
     <p class="flex-1 text-sm font-medium text-neutral-950">Transaksi</p>
     <p id="hintArah" class="text-xs text-neutral-400">wajib dipilih</p>
   </div>
-  <div class="mt-2.5 grid grid-cols-2 gap-3">
-    <button data-arah="plus" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-4 flex flex-col items-center gap-2">
-      <span class="rounded-full bg-neutral-100 p-2 ikon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+  <div class="mt-2.5 grid grid-cols-3 gap-2">
+    <button data-arah="plus" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-3.5 flex flex-col items-center gap-1.5">
+      <span class="rounded-full bg-neutral-100 p-1.5 ikon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.1" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       </span>
-      <span class="text-[13px] font-medium text-neutral-950 label">Tambah saldo</span>
+      <span class="text-[12px] font-medium text-neutral-950 label">Tambah</span>
     </button>
-    <button data-arah="minus" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-4 flex flex-col items-center gap-2">
-      <span class="rounded-full bg-neutral-100 p-2 ikon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+    <button data-arah="minus" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-3.5 flex flex-col items-center gap-1.5">
+      <span class="rounded-full bg-neutral-100 p-1.5 ikon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.1" stroke-linecap="round"><path d="M5 12h14"/></svg>
       </span>
-      <span class="text-[13px] font-medium text-neutral-950 label">Kurangi saldo</span>
+      <span class="text-[12px] font-medium text-neutral-950 label">Kurangi</span>
+    </button>
+    <button data-arah="transfer" class="pilihArah rounded-[10px] border border-neutral-200 bg-white py-3.5 flex flex-col items-center gap-1.5">
+      <span class="rounded-full bg-neutral-100 p-1.5 ikon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+      </span>
+      <span class="text-[12px] font-medium text-neutral-950 label">Transfer</span>
     </button>
   </div>
 
-  <!-- Jenis -->
+  <div id="grupKirimKe" class="hidden mt-5">
+    <div class="flex items-center gap-2">
+      <p class="flex-1 text-sm font-medium text-neutral-950">Kirim ke</p>
+      <p class="text-xs text-neutral-400">wajib dipilih</p>
+    </div>
+    <select id="pilihPenerima" class="mt-2 w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-3 text-sm text-neutral-950">
+      <option value="">Pilih pengguna</option>
+    </select>
+  </div>
+
   <div class="mt-6 flex items-center gap-2">
     <p class="flex-1 text-sm font-medium text-neutral-950">Jenis transaksi</p>
     <p id="hintJenis" class="text-xs text-neutral-400">wajib dipilih</p>
@@ -120,25 +128,39 @@
   </button>
 </section>
 
-<!-- ================= VIEW 2 — CONFIRMATION ================= -->
+<!-- ============ VIEW 2 — KONFIRMASI ============ -->
 <section id="viewKonfirmasi" class="hidden w-full max-w-md md:max-w-2xl mx-auto md:bg-white md:border md:border-neutral-200 md:rounded-xl md:p-8 md:shadow-sm">
-
   <div class="flex items-center gap-3">
     <button id="tombolKembali" aria-label="Kembali">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
     </button>
-    <h1 class="text-base md:text-[22px] font-semibold md:font-bold text-neutral-950">Konfirmasi transaksi</h1>
+    <h1 id="judulKonf" class="text-base md:text-[22px] font-semibold md:font-bold text-neutral-950">Konfirmasi transaksi</h1>
   </div>
 
   <div id="errKonf" class="hidden mt-5 rounded-[10px] border border-red-200 bg-red-50 px-4 py-3">
     <p id="errKonfTeks" class="text-sm text-red-700"></p>
   </div>
 
-  <!-- Jumlah besar -->
   <div class="mt-5 rounded-xl bg-neutral-100 py-5 flex flex-col items-center gap-1">
     <p class="text-xs font-medium text-neutral-500">Jumlah transaksi</p>
     <p id="tampilJumlah" class="text-[34px] md:text-[40px] font-bold text-neutral-950">+ Rp 0</p>
     <span class="rounded-md bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-500">tidak dapat diubah</span>
+  </div>
+
+  <!-- alur transfer -->
+  <div id="blokAlur" class="hidden mt-5">
+    <p class="text-sm font-medium text-neutral-950">Transfer</p>
+    <div class="mt-2 flex items-center gap-3 rounded-[10px] bg-neutral-100 px-4 py-3.5">
+      <div class="flex-1 min-w-0">
+        <p class="text-[10px] text-neutral-500">Dari</p>
+        <p id="alurDari" class="text-sm font-semibold text-neutral-950 truncate">–</p>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      <div class="flex-1 min-w-0">
+        <p class="text-[10px] text-neutral-500">Ke</p>
+        <p id="alurKe" class="text-sm font-semibold text-neutral-950 truncate">–</p>
+      </div>
+    </div>
   </div>
 
   <div class="mt-5 grid grid-cols-2 gap-4">
@@ -160,7 +182,6 @@
     <p id="catatanJenis" class="hidden text-xs text-neutral-500"></p>
   </div>
 
-  <!-- Metode, hanya untuk Virtual -->
   <div id="blokMetode" class="hidden mt-4">
     <div class="flex items-center gap-2">
       <p class="flex-1 text-sm font-medium text-neutral-950">Metode</p>
@@ -179,14 +200,28 @@
   </div>
 
   <div class="mt-4 space-y-2">
-    <label for="inputNama" class="block text-sm font-medium text-neutral-950">Nama transaksi</label>
+    <div class="flex items-center gap-2">
+      <label for="inputNama" class="flex-1 text-sm font-medium text-neutral-950">Nama transaksi</label>
+      <span id="hintNama" class="hidden text-xs text-neutral-400">terisi otomatis, bisa diubah</span>
+    </div>
     <input id="inputNama" type="text" placeholder="contoh: Pembayaran proyek klien"
       class="w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-950 placeholder:text-neutral-400">
   </div>
 
   <div class="mt-4 space-y-2">
-    <label for="inputKategori" class="block text-sm font-medium text-neutral-950">Kategori transaksi</label>
+    <div class="flex items-center gap-2">
+      <label class="flex-1 text-sm font-medium text-neutral-950">Kategori transaksi</label>
+      <span id="hintKategori" class="hidden text-xs text-neutral-400">terkunci</span>
+    </div>
     <select id="inputKategori" class="w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-950"></select>
+    <div id="kategoriTerkunci" class="hidden flex items-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-100 px-3.5 py-2.5">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+      <span class="text-sm text-neutral-700">Pindah aset</span>
+    </div>
+  </div>
+
+  <div id="catatanTransfer" class="hidden mt-4 rounded-[10px] bg-neutral-100 px-3.5 py-3">
+    <p class="text-[11px] text-neutral-500">Tercatat sebagai dua baris berpasangan. Untuk jenis Virtual, metode otomatis diisi Transfer.</p>
   </div>
 
   <button id="tombolSimpan"
@@ -195,22 +230,19 @@
   </button>
 </section>
 
-<!-- ================= VIEW 3 — BERHASIL ================= -->
+<!-- ============ VIEW 3 — BERHASIL ============ -->
 <section id="viewBerhasil" class="hidden w-full max-w-md mx-auto md:bg-white md:border md:border-neutral-200 md:rounded-xl md:p-8 md:shadow-sm text-center">
   <div class="flex flex-col items-center pt-10 md:pt-0">
     <div class="rounded-full bg-neutral-900 p-5">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
     </div>
-    <h1 class="mt-6 text-[22px] font-bold text-neutral-950">Transaksi berhasil dicatat</h1>
+    <h1 id="judulBerhasil" class="mt-6 text-[22px] font-bold text-neutral-950">Transaksi berhasil dicatat</h1>
     <p class="mt-1.5 text-sm text-neutral-500">Data sudah tersimpan di riwayat transaksi.</p>
-
     <div id="ringkasan" class="mt-6 w-full rounded-xl bg-neutral-100 px-4 py-4 space-y-2.5 text-left"></div>
-
     <p id="teksHitung" class="mt-8 text-[13px] font-medium text-neutral-500">Kembali ke Main Screen dalam 5 detik</p>
     <div class="mt-2.5 w-full h-1.5 rounded-full bg-neutral-200 overflow-hidden">
       <div id="barHitung" class="h-full bg-neutral-900 rounded-full" style="width:100%"></div>
     </div>
-
     <button id="tombolSekarang" class="mt-5 w-full rounded-lg border border-neutral-200 bg-white py-3.5 text-[15px] font-medium text-neutral-950">
       Kembali sekarang
     </button>
@@ -228,39 +260,34 @@ if (!profile) throw new Error('belum login')
 document.getElementById('avatar').textContent  = initials(profile.nama)
 document.getElementById('barNama').textContent = profile.nama
 document.getElementById('barRole').textContent =
-  profile.role === 'superadmin' ? 'Superadmin' :
-  profile.role === 'admin' ? 'Admin' : 'Pengguna biasa'
-
+  profile.role === 'superadmin' ? 'Superadmin' : profile.role === 'admin' ? 'Admin' : 'Pengguna biasa'
 if (profile.role === 'admin' || profile.role === 'superadmin') {
   document.getElementById('menuDashboard').classList.remove('hidden')
   document.getElementById('menuUsers').classList.remove('hidden')
 }
 
 // ---------- Menu ----------
-const overlay = document.getElementById('overlay')
-const drawer  = document.getElementById('drawer')
-function bukaMenu()  { overlay.classList.remove('hidden'); drawer.classList.remove('hidden') }
-function tutupMenu() { overlay.classList.add('hidden');    drawer.classList.add('hidden') }
-document.getElementById('tombolMenu').addEventListener('click', bukaMenu)
-document.getElementById('tutupMenu').addEventListener('click', tutupMenu)
-overlay.addEventListener('click', tutupMenu)
-document.getElementById('menuLogout').addEventListener('click', logout)
+const overlay = document.getElementById('overlay'), drawer = document.getElementById('drawer')
+document.getElementById('tombolMenu').onclick = () => { overlay.classList.remove('hidden'); drawer.classList.remove('hidden') }
+const tutup = () => { overlay.classList.add('hidden'); drawer.classList.add('hidden') }
+document.getElementById('tutupMenu').onclick = tutup
+overlay.onclick = tutup
+document.getElementById('menuLogout').onclick = logout
 
-// ---------- Data sementara ----------
-let data = { jumlah: 0, arah: null, jenis: null, metode: null }
+// ---------- State ----------
+let data = { jumlah:0, arah:null, jenis:null, metode:null, penerima:null, namaPenerima:null }
+let penerimaDimuat = false
 
-// Tabungan dibalik: menabung mengurangi saldo, ambil tabungan menambah saldo.
-// Setor tunai & tarik tunai hanya tersedia untuk transaksi Virtual.
 const KATEGORI = {
-  plus:  [['income','Income'], ['setor_tunai','Setor tunai'], ['ambil_tabungan','Ambil tabungan'], ['roi','ROI']],
-  minus: [['expenses','Expenses'], ['tarik_tunai','Tarik tunai'], ['menabung','Menabung'], ['capex','Capex']]
+  plus:  [['income','Income'],['setor_tunai','Setor tunai'],['ambil_tabungan','Ambil tabungan'],['roi','ROI']],
+  minus: [['expenses','Expenses'],['tarik_tunai','Tarik tunai'],['menabung','Menabung'],['capex','Capex']]
 }
-const HANYA_VIRTUAL = ['setor_tunai', 'tarik_tunai']
+const HANYA_VIRTUAL = ['setor_tunai','tarik_tunai']
+const adalahTransfer = () => data.arah === 'transfer'
 
-// ---------- Tampilan pilihan aktif ----------
+// ---------- Tampilan pilihan ----------
 function setAktif(tombol, aktif) {
-  const ikon  = tombol.querySelector('.ikon')
-  const label = tombol.querySelector('.label')
+  const ikon = tombol.querySelector('.ikon'), label = tombol.querySelector('.label')
   if (aktif) {
     tombol.classList.add('bg-neutral-900','border-neutral-900')
     tombol.classList.remove('bg-white','border-neutral-200')
@@ -276,187 +303,213 @@ function setAktif(tombol, aktif) {
   }
 }
 
-// ---------- Input jumlah ----------
 const inputJumlah = document.getElementById('inputJumlah')
 inputJumlah.addEventListener('input', () => {
-  const angka = inputJumlah.value.replace(/\D/g, '')
-  data.jumlah = angka ? parseInt(angka, 10) : 0
+  const angka = inputJumlah.value.replace(/\D/g,'')
+  data.jumlah = angka ? parseInt(angka,10) : 0
   inputJumlah.value = data.jumlah ? data.jumlah.toLocaleString('id-ID') : ''
   cekLanjut()
 })
 
-// ---------- Radio ----------
-document.querySelectorAll('.pilihArah').forEach(b => b.addEventListener('click', () => {
+async function muatPenerima() {
+  if (penerimaDimuat) return
+  const { data: daftar, error } = await supabase.rpc('daftar_penerima')
+  const sel = document.getElementById('pilihPenerima')
+  if (error) { sel.innerHTML = '<option value="">Gagal memuat daftar</option>'; return }
+  if (!daftar || daftar.length === 0) {
+    sel.innerHTML = '<option value="">Tidak ada pengguna aktif lain</option>'; return
+  }
+  sel.innerHTML = '<option value="">Pilih pengguna</option>' +
+    daftar.map(u => '<option value="'+u.id+'">'+u.nama+'</option>').join('')
+  penerimaDimuat = true
+}
+
+document.querySelectorAll('.pilihArah').forEach(b => b.onclick = async () => {
   data.arah = b.dataset.arah
   document.querySelectorAll('.pilihArah').forEach(x => setAktif(x, x === b))
   document.getElementById('hintArah').classList.add('hidden')
+  const grup = document.getElementById('grupKirimKe')
+  if (adalahTransfer()) { grup.classList.remove('hidden'); await muatPenerima() }
+  else { grup.classList.add('hidden'); data.penerima = null; document.getElementById('pilihPenerima').value = '' }
   cekLanjut()
-}))
-document.querySelectorAll('.pilihJenis').forEach(b => b.addEventListener('click', () => {
+})
+document.getElementById('pilihPenerima').onchange = e => {
+  data.penerima = e.target.value || null
+  data.namaPenerima = e.target.selectedOptions[0] ? e.target.selectedOptions[0].textContent : null
+  cekLanjut()
+}
+document.querySelectorAll('.pilihJenis').forEach(b => b.onclick = () => {
   data.jenis = b.dataset.jenis
   document.querySelectorAll('.pilihJenis').forEach(x => setAktif(x, x === b))
   document.getElementById('hintJenis').classList.add('hidden')
   cekLanjut()
-}))
-document.querySelectorAll('.pilihMetode').forEach(b => b.addEventListener('click', () => {
+})
+document.querySelectorAll('.pilihMetode').forEach(b => b.onclick = () => {
   data.metode = b.dataset.metode
   document.querySelectorAll('.pilihMetode').forEach(x => setAktif(x, x === b))
-}))
+})
 
 function cekLanjut() {
-  document.getElementById('tombolLanjut').disabled = !(data.jumlah > 0 && data.arah && data.jenis)
+  const siap = data.jumlah > 0 && data.arah && data.jenis && (!adalahTransfer() || data.penerima)
+  document.getElementById('tombolLanjut').disabled = !siap
 }
 
-// ---------- Pindah view ----------
 function tampilkan(id) {
-  ['viewMain','viewKonfirmasi','viewBerhasil'].forEach(v =>
+  ;['viewMain','viewKonfirmasi','viewBerhasil'].forEach(v =>
     document.getElementById(v).classList.toggle('hidden', v !== id))
-  window.scrollTo(0, 0)
+  window.scrollTo(0,0)
 }
 
 // ---------- Ke konfirmasi ----------
-document.getElementById('tombolLanjut').addEventListener('click', () => {
-  const tanda = data.arah === 'plus' ? '+' : '−'
+document.getElementById('tombolLanjut').onclick = () => {
+  const transfer = adalahTransfer()
+  const tanda = transfer ? '−' : (data.arah === 'plus' ? '+' : '−')
   document.getElementById('tampilJumlah').textContent = tanda + ' Rp ' + rupiah(data.jumlah)
 
-  const sekarang = new Date()
-  document.getElementById('inputTanggal').value = sekarang.toISOString().slice(0, 10)
+  const kini = new Date()
+  document.getElementById('inputTanggal').value =
+    kini.getFullYear()+'-'+String(kini.getMonth()+1).padStart(2,'0')+'-'+String(kini.getDate()).padStart(2,'0')
   document.getElementById('inputWaktu').value =
-    String(sekarang.getHours()).padStart(2,'0') + ':' + String(sekarang.getMinutes()).padStart(2,'0')
+    String(kini.getHours()).padStart(2,'0')+':'+String(kini.getMinutes()).padStart(2,'0')
 
-  isiKategori()
-  terapkanJenis()
-  document.getElementById('inputNama').value = ''
+  document.getElementById('tampilJenis').textContent = data.jenis === 'cash' ? 'Cash' : 'Virtual'
+  document.getElementById('judulKonf').textContent = transfer ? 'Konfirmasi transfer' : 'Konfirmasi transaksi'
+  document.getElementById('tombolSimpan').textContent = transfer ? 'Kirim transfer' : 'Submit data'
+
+  document.getElementById('blokAlur').classList.toggle('hidden', !transfer)
+  document.getElementById('catatanTransfer').classList.toggle('hidden', !transfer)
+  document.getElementById('hintNama').classList.toggle('hidden', !transfer)
+  document.getElementById('hintKategori').classList.toggle('hidden', !transfer)
+  document.getElementById('inputKategori').classList.toggle('hidden', transfer)
+  document.getElementById('kategoriTerkunci').classList.toggle('hidden', !transfer)
+
+  if (transfer) {
+    document.getElementById('alurDari').textContent = profile.nama
+    document.getElementById('alurKe').textContent = data.namaPenerima
+    document.getElementById('inputNama').value = 'Transfer dari ' + profile.nama + ' ke ' + data.namaPenerima
+    document.getElementById('blokMetode').classList.add('hidden')
+    document.getElementById('catatanJenis').classList.add('hidden')
+  } else {
+    document.getElementById('inputNama').value = ''
+    isiKategori()
+    terapkanJenis()
+  }
   document.getElementById('errKonf').classList.add('hidden')
   tampilkan('viewKonfirmasi')
-})
+}
 
 function isiKategori() {
-  const select = document.getElementById('inputKategori')
-  const pilihan = KATEGORI[data.arah].filter(([nilai]) =>
-    data.jenis === 'virtual' || !HANYA_VIRTUAL.includes(nilai))
-
-  select.innerHTML = pilihan
-    .map(([nilai, label]) => '<option value="' + nilai + '">' + label + '</option>').join('')
-
+  const sel = document.getElementById('inputKategori')
+  const pilihan = KATEGORI[data.arah].filter(([v]) => data.jenis === 'virtual' || !HANYA_VIRTUAL.includes(v))
+  sel.innerHTML = pilihan.map(([v,l]) => '<option value="'+v+'">'+l+'</option>').join('')
   const catatan = document.getElementById('catatanJenis')
   if (data.jenis === 'cash') {
     catatan.textContent = 'Setor tunai dan tarik tunai hanya tersedia untuk transaksi Virtual.'
     catatan.classList.remove('hidden')
-  } else {
-    catatan.classList.add('hidden')
-  }
+  } else catatan.classList.add('hidden')
 }
-
 function terapkanJenis() {
-  document.getElementById('tampilJenis').textContent = data.jenis === 'cash' ? 'Cash' : 'Virtual'
   const blok = document.getElementById('blokMetode')
-  if (data.jenis === 'virtual') {
-    blok.classList.remove('hidden')
-  } else {
-    blok.classList.add('hidden')
-    data.metode = null
+  if (data.jenis === 'virtual') blok.classList.remove('hidden')
+  else {
+    blok.classList.add('hidden'); data.metode = null
     document.querySelectorAll('.pilihMetode').forEach(x => setAktif(x, false))
   }
 }
 
-document.getElementById('tombolKembali').addEventListener('click', () => tampilkan('viewMain'))
+document.getElementById('tombolKembali').onclick = () => tampilkan('viewMain')
 
 // ---------- Simpan ----------
 const tombolSimpan = document.getElementById('tombolSimpan')
-tombolSimpan.addEventListener('click', async () => {
-  const kotak = document.getElementById('errKonf')
-  const teks  = document.getElementById('errKonfTeks')
+tombolSimpan.onclick = async () => {
+  const kotak = document.getElementById('errKonf'), teks = document.getElementById('errKonfTeks')
   kotak.classList.add('hidden')
+  const gagal = p => { teks.textContent = p; kotak.classList.remove('hidden'); window.scrollTo(0,0) }
 
-  const nama     = document.getElementById('inputNama').value.trim()
-  const kategori = document.getElementById('inputKategori').value
-  const tanggal  = document.getElementById('inputTanggal').value
-  const waktu    = document.getElementById('inputWaktu').value
+  const nama = document.getElementById('inputNama').value.trim()
+  const tanggal = document.getElementById('inputTanggal').value
+  const waktu = document.getElementById('inputWaktu').value
+  const transfer = adalahTransfer()
 
-  function gagal(pesan) { teks.textContent = pesan; kotak.classList.remove('hidden'); window.scrollTo(0,0) }
-
-  if (!nama)  return gagal('Nama transaksi wajib diisi.')
+  if (!nama) return gagal('Nama transaksi wajib diisi.')
   if (!tanggal || !waktu) return gagal('Tanggal dan waktu wajib diisi.')
-  if (data.jenis === 'virtual' && !data.metode) return gagal('Pilih metode QRIS atau Transfer.')
+  if (!transfer && data.jenis === 'virtual' && !data.metode) return gagal('Pilih metode QRIS atau Transfer.')
 
-  tombolSimpan.disabled = true
-  tombolSimpan.textContent = 'Menyimpan…'
+  const label = tombolSimpan.textContent
+  tombolSimpan.disabled = true; tombolSimpan.textContent = 'Menyimpan…'
+  const waktuISO = new Date(tanggal + 'T' + waktu).toISOString()
 
-  const { error } = await supabase.from('transactions').insert({
-    user_id:     profile.id,
-    occurred_at: new Date(tanggal + 'T' + waktu).toISOString(),
-    nama:        nama,
-    category:    kategori,
-    direction:   data.arah,
-    channel:     data.jenis,
-    method:      data.jenis === 'virtual' ? data.metode : null,
-    debit:       data.arah === 'minus' ? data.jumlah : 0,
-    credit:      data.arah === 'plus'  ? data.jumlah : 0
-  })
-
-  tombolSimpan.disabled = false
-  tombolSimpan.textContent = 'Submit data'
-
-  if (error) {
-    if (error.code === '42501') return gagal('Akun Anda nonaktif, sehingga tidak dapat menyimpan data.')
-    return gagal('Gagal menyimpan: ' + error.message)
+  let error, kategori
+  if (transfer) {
+    kategori = 'pindah_aset'
+    ;({ error } = await supabase.rpc('buat_transfer', {
+      p_ke: data.penerima, p_jumlah: data.jumlah, p_channel: data.jenis,
+      p_waktu: waktuISO, p_nama: nama
+    }))
+  } else {
+    kategori = document.getElementById('inputKategori').value
+    ;({ error } = await supabase.from('transactions').insert({
+      user_id: profile.id, occurred_at: waktuISO, nama, category: kategori,
+      direction: data.arah, channel: data.jenis,
+      method: data.jenis === 'virtual' ? data.metode : null,
+      debit:  data.arah === 'minus' ? data.jumlah : 0,
+      credit: data.arah === 'plus'  ? data.jumlah : 0
+    }))
   }
 
+  tombolSimpan.disabled = false; tombolSimpan.textContent = label
+  if (error) {
+    if (error.code === '42501') return gagal('Akun Anda nonaktif, sehingga tidak dapat menyimpan data.')
+    return gagal('Gagal menyimpan: ' + (error.message || 'terjadi kesalahan'))
+  }
   tampilkanBerhasil(nama, kategori)
-})
+}
 
 // ---------- Berhasil ----------
 let hitungMundur = null
-
 function tampilkanBerhasil(nama, kategori) {
-  const tanda = data.arah === 'plus' ? '+' : '−'
-  const labelKategori = KATEGORI[data.arah].find(k => k[0] === kategori)[1]
+  const transfer = adalahTransfer()
+  const tanda = transfer ? '−' : (data.arah === 'plus' ? '+' : '−')
   const labelJenis = data.jenis === 'cash' ? 'Cash'
-    : 'Virtual · ' + (data.metode === 'qris' ? 'QRIS' : 'Transfer')
+    : 'Virtual · ' + (transfer ? 'Transfer' : (data.metode === 'qris' ? 'QRIS' : 'Transfer'))
+  const labelKategori = transfer ? 'Pindah aset'
+    : KATEGORI[data.arah].find(k => k[0] === kategori)[1]
 
-  const baris = [
-    ['Jumlah', tanda + ' Rp ' + rupiah(data.jumlah)],
-    ['Nama transaksi', nama],
-    ['Kategori', labelKategori],
-    ['Jenis', labelJenis]
-  ]
-  document.getElementById('ringkasan').innerHTML = baris.map(([k, v]) =>
-    '<div class="flex justify-between gap-3 text-[13px]">' +
-      '<span class="text-neutral-500">' + k + '</span>' +
-      '<span class="font-semibold text-neutral-950 text-right">' + v + '</span>' +
-    '</div>').join('')
+  document.getElementById('judulBerhasil').textContent =
+    transfer ? 'Transfer berhasil dikirim' : 'Transaksi berhasil dicatat'
+
+  const baris = [['Jumlah', tanda + ' Rp ' + rupiah(data.jumlah)]]
+  if (transfer) baris.push(['Penerima', data.namaPenerima])
+  baris.push(['Nama transaksi', nama], ['Kategori', labelKategori], ['Jenis', labelJenis])
+
+  document.getElementById('ringkasan').innerHTML = baris.map(([k,v]) =>
+    '<div class="flex justify-between gap-3 text-[13px]"><span class="text-neutral-500">'+k+'</span>' +
+    '<span class="font-semibold text-neutral-950 text-right">'+v+'</span></div>').join('')
 
   tampilkan('viewBerhasil')
 
   let sisa = 5
-  const teks = document.getElementById('teksHitung')
-  const bar  = document.getElementById('barHitung')
-  teks.textContent = 'Kembali ke Main Screen dalam 5 detik'
-  bar.style.width = '100%'
-
+  const teks = document.getElementById('teksHitung'), bar = document.getElementById('barHitung')
+  teks.textContent = 'Kembali ke Main Screen dalam 5 detik'; bar.style.width = '100%'
   clearInterval(hitungMundur)
   hitungMundur = setInterval(() => {
     sisa--
-    bar.style.width = (sisa / 5 * 100) + '%'
+    bar.style.width = (sisa/5*100) + '%'
     if (sisa <= 0) { clearInterval(hitungMundur); resetSemua() }
     else teks.textContent = 'Kembali ke Main Screen dalam ' + sisa + ' detik'
   }, 1000)
 }
-
-document.getElementById('tombolSekarang').addEventListener('click', () => {
-  clearInterval(hitungMundur)
-  resetSemua()
-})
+document.getElementById('tombolSekarang').onclick = () => { clearInterval(hitungMundur); resetSemua() }
 
 function resetSemua() {
-  data = { jumlah: 0, arah: null, jenis: null, metode: null }
+  data = { jumlah:0, arah:null, jenis:null, metode:null, penerima:null, namaPenerima:null }
   inputJumlah.value = ''
   document.querySelectorAll('.pilihArah, .pilihJenis, .pilihMetode').forEach(x => setAktif(x, false))
   document.getElementById('hintArah').classList.remove('hidden')
   document.getElementById('hintJenis').classList.remove('hidden')
+  document.getElementById('grupKirimKe').classList.add('hidden')
+  document.getElementById('pilihPenerima').value = ''
   document.getElementById('catatanJenis').classList.add('hidden')
-  document.getElementById('errMain').classList.add('hidden')
   cekLanjut()
   tampilkan('viewMain')
 }

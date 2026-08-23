@@ -554,11 +554,22 @@ const hitungSebagaiKeluar = r =>
 const hitungSebagaiMasuk = r =>
   Number(r.credit) > 0 && !PEMINDAHAN_KAS.includes(r.category)
 
+// Arus besar hanya melihat uang yang benar-benar keluar dalam jumlah besar:
+// Expenses, Capex, dan Menabung. Income, ROI, ambil tabungan, serta tarik/setor tunai
+// tidak dihitung. Untuk transaksi berpasangan hanya sisi pengurangan yang diambil,
+// sehingga satu perpindahan tidak terhitung dua kali.
+const KATEGORI_ARUS_BESAR = ['expenses', 'capex', 'menabung']
+function nilaiArusBesar(r) {
+  if (!KATEGORI_ARUS_BESAR.includes(r.category)) return 0
+  const d = Number(r.debit) || 0
+  return d >= BATAS_BESAR ? d : 0
+}
+
 function nilaiMetrik(r, metrik) {
   const d = Number(r.debit) || 0, c = Number(r.credit) || 0
   if (metrik === 'pengeluaran') return hitungSebagaiKeluar(r) ? d : 0
   if (metrik === 'pemasukan')   return hitungSebagaiMasuk(r) ? c : 0
-  if (metrik === 'besar')       { const v = Math.max(d, c); return v >= BATAS_BESAR ? v : 0 }
+  if (metrik === 'besar')       return nilaiArusBesar(r)
   if (metrik === 'tabungan')    return r.category === 'menabung' ? d : (r.category === 'ambil_tabungan' ? -c : 0)
   return c - d
 }
@@ -733,12 +744,6 @@ function isiBulan() {
   sel.innerHTML = '<option value="">Semua bulan</option>' + bulan.map(b => '<option value="'+b+'">'+BULAN[b-1]+'</option>').join('')
   sel.value = fBulan || ''
 }
-function rentang() {
-  if (!fTahun) return null
-  const mulai   = fBulan ? new Date(fTahun, fBulan-1, 1) : new Date(fTahun, 0, 1)
-  const selesai = fBulan ? new Date(fTahun, fBulan, 1)   : new Date(fTahun+1, 0, 1)
-  return { mulai: mulai.toISOString(), selesai: selesai.toISOString() }
-}
 function perbaruiTampilanPeriode() {
   const aktif = !!fTahun
   const r = document.getElementById('resetPeriode')
@@ -767,7 +772,6 @@ let sortKolom = 'occurred_at', sortNaik = false
 let barisSaatIni = [], saldoUser = [], userAktif = 0
 
 async function muatRiwayat() {
-  const r = rentang()
   const users = semuaTerpilih(userRw) ? null : arr(userRw)
 
   // Kartu saldo & saldo per pengguna hanya dipengaruhi periode + pilihan pengguna.
@@ -785,18 +789,21 @@ async function muatRiwayat() {
   gambarSaldoUser()
 
   const batas = parseInt(document.getElementById('jumlahTampil').value, 10)
-  let q = supabase.from('transaction_ledger').select('*')
   const fk = document.getElementById('filterKategori').value
   const fj = document.getElementById('filterJenis').value
-  if (users) q = q.in('user_id', users)
-  if (fk) q = q.eq('category', fk)
-  if (fj) q = q.eq('channel', fj)
-  if (r)  q = q.gte('occurred_at', r.mulai).lt('occurred_at', r.selesai)
-  q = q.order(sortKolom, { ascending: sortNaik })
-  if (sortKolom !== 'occurred_at') q = q.order('occurred_at', { ascending: false })
-  q = q.limit(batas)
 
-  const { data, error } = await q
+  // Saldo cash & virtual di tabel adalah saldo berjalan, jadi harus dihitung ulang
+  // di database mengikuti pengguna yang dipilih — tidak bisa disaring di sisi browser.
+  const { data, error } = await supabase.rpc('riwayat', {
+    p_users: users,
+    p_tahun: fTahun,
+    p_bulan: fBulan,
+    p_kategori: fk || null,
+    p_channel: fj || null,
+    p_sort: sortKolom,
+    p_asc: sortNaik,
+    p_limit: batas
+  })
   if (error) { alert('Gagal memuat data: ' + error.message); return }
   barisSaatIni = data || []
   gambarTabel()

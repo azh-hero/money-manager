@@ -527,7 +527,8 @@ const semuaTerpilih = s => s.size === PROFIL.length
 
 // ==================== OVERVIEW ====================
 const JAM = 3600000, HARI = 86400000
-let metrikAktif = 'pengeluaran', grafik = null, barisOverview = [], saldoAwal = {}
+let metrikAktif = 'pengeluaran', grafik = null, barisOverview = []
+let saldoAwal = {}, tabunganAwal = {}
 
 function infoPeriode(k) {
   const kini = new Date(), awal = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate())
@@ -591,8 +592,11 @@ async function muatOverview() {
 
   const { data: awalData } = await supabase.rpc('saldo_sebelum', {
     p_waktu: p.mulai.toISOString(), p_users: users })
-  saldoAwal = {}
-  ;(awalData || []).forEach(r => { saldoAwal[r.user_id] = Number(r.saldo) || 0 })
+  saldoAwal = {}; tabunganAwal = {}
+  ;(awalData || []).forEach(r => {
+    saldoAwal[r.user_id]    = Number(r.saldo)    || 0
+    tabunganAwal[r.user_id] = Number(r.tabungan) || 0
+  })
 
   try {
     barisOverview = await ambilSemua(() => {
@@ -628,14 +632,16 @@ function gambarGrafik(p) {
     if (perUser[r.user_id]) perUser[r.user_id][i] += v
   })
 
-  // Tab Saldo menampilkan saldo sesungguhnya di tiap titik waktu, bukan perubahannya.
-  // Karena itu dimulai dari saldo sebelum periode, lalu titik tanpa transaksi
-  // mempertahankan nilai sebelumnya.
-  if (metrikAktif === 'saldo') {
-    let j = idUser.reduce((a, u) => a + (saldoAwal[u] || 0), 0)
+  // Tab Saldo dan Tabungan menampilkan posisi sesungguhnya di tiap titik waktu,
+  // bukan perubahannya. Karena itu dimulai dari angka sebelum periode, lalu titik
+  // tanpa transaksi mempertahankan nilai sebelumnya.
+  const berjalan = metrikAktif === 'saldo' || metrikAktif === 'tabungan'
+  if (berjalan) {
+    const awal = metrikAktif === 'saldo' ? saldoAwal : tabunganAwal
+    let j = idUser.reduce((a, u) => a + (awal[u] || 0), 0)
     for (let i = 0; i < n; i++) { j += total[i]; total[i] = j }
     idUser.forEach(u => {
-      let a = saldoAwal[u] || 0
+      let a = awal[u] || 0
       for (let i = 0; i < n; i++) { a += perUser[u][i]; perUser[u][i] = a }
     })
   }
@@ -670,7 +676,7 @@ function gambarGrafik(p) {
       },
       scales:{
         x:{ grid:{ display:false }, ticks:{ font:{size:10}, maxRotation:0, autoSkip:true, maxTicksLimit:12 } },
-        y:{ beginAtZero: metrikAktif !== 'saldo', ticks:{ font:{size:10}, callback:v => rupiah(v) },
+        y:{ beginAtZero: !berjalan, ticks:{ font:{size:10}, callback:v => rupiah(v) },
             border:{ dash:[3,3], display:false }, grid:{ color:'#E5E5E5' } }
       }
     }

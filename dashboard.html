@@ -52,7 +52,7 @@
       <h2 class="hidden md:block text-[26px] font-bold text-neutral-950">Overview</h2>
       <p class="hidden md:block text-sm text-neutral-500 mt-0.5">Ringkasan aktivitas keuangan pada periode terpilih.</p>
     </div>
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
       <div class="relative flex-1 md:flex-none">
         <button id="btnUserOv" class="w-full flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -72,7 +72,18 @@
         <option value="bulan">Bulan berjalan</option><option value="30hari" selected>30 hari terakhir</option>
         <option value="90hari">90 hari terakhir</option><option value="tahun">Tahun berjalan</option>
         <option value="setahun">Setahun ke belakang</option>
+        <option value="custom">Custom</option>
       </select>
+      <select id="ovTahun" class="hidden rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <option value="">Pilih tahun</option>
+      </select>
+      <select id="ovBulan" disabled class="hidden rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <option value="">Bulan</option>
+      </select>
+      <button id="ovReset" class="hidden items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        Nonaktifkan
+      </button>
     </div>
   </div>
 
@@ -94,21 +105,33 @@
     </div>
   </div>
 
-  <!-- strip subtle -->
-  <div class="mt-2.5 md:mt-4 flex items-center rounded-xl border border-neutral-200 bg-white px-1 md:px-2.5 py-2.5 md:py-3">
-    <div class="flex-1 text-center">
-      <p class="text-[10px] md:text-[11px] text-neutral-400">Total saldo</p>
-      <p id="kSaldoTotal" class="text-[13px] md:text-[15px] font-semibold text-neutral-700">Rp 0</p>
-    </div>
-    <div class="w-px h-[26px] md:h-[30px] bg-neutral-200"></div>
-    <div class="flex-1 text-center">
-      <p class="text-[10px] md:text-[11px] text-neutral-400">Tabungan</p>
-      <p id="kTabungan" class="text-[13px] md:text-[15px] font-semibold text-neutral-700">Rp 0</p>
-    </div>
-    <div class="w-px h-[26px] md:h-[30px] bg-neutral-200"></div>
-    <div class="flex-1 text-center">
-      <p class="text-[10px] md:text-[11px] text-neutral-400">Total aset</p>
-      <p id="kAset" class="text-[13px] md:text-[15px] font-bold text-neutral-950">Rp 0</p>
+  <!-- strip subtle: lima kolom, digeser ke samping di layar sempit -->
+  <div class="mt-2.5 md:mt-4 rounded-xl border border-neutral-200 bg-white px-1 md:px-2.5 py-2.5 md:py-3 overflow-x-auto">
+    <div class="flex items-center min-w-[560px] md:min-w-0">
+      <div class="flex-1 shrink-0 basis-[108px] md:basis-auto text-center">
+        <p class="text-[10px] md:text-[11px] text-neutral-400">Total saldo</p>
+        <p id="kSaldoTotal" class="text-[13px] md:text-[15px] font-semibold text-neutral-700">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] md:h-[30px] bg-neutral-200 shrink-0"></div>
+      <div class="flex-1 shrink-0 basis-[108px] md:basis-auto text-center">
+        <p class="text-[10px] md:text-[11px] text-neutral-400">Tabungan</p>
+        <p id="kTabungan" class="text-[13px] md:text-[15px] font-semibold text-neutral-700">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] md:h-[30px] bg-neutral-200 shrink-0"></div>
+      <div class="flex-1 shrink-0 basis-[108px] md:basis-auto text-center">
+        <p class="text-[10px] md:text-[11px] text-neutral-400">Total aset</p>
+        <p id="kAset" class="text-[13px] md:text-[15px] font-bold text-neutral-950">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] md:h-[30px] bg-neutral-200 shrink-0"></div>
+      <div class="flex-1 shrink-0 basis-[108px] md:basis-auto text-center">
+        <p class="text-[10px] md:text-[11px] text-neutral-400">Pengeluaran</p>
+        <p id="kPengeluaran" class="text-[13px] md:text-[15px] font-semibold text-red-700">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] md:h-[30px] bg-neutral-200 shrink-0"></div>
+      <div class="flex-1 shrink-0 basis-[108px] md:basis-auto text-center">
+        <p class="text-[10px] md:text-[11px] text-neutral-400">Pemasukan</p>
+        <p id="kPemasukan" class="text-[13px] md:text-[15px] font-semibold text-green-700">Rp 0</p>
+      </div>
     </div>
   </div>
 
@@ -250,31 +273,72 @@
     </select>
   </div>
 
-  <!-- kartu saldo -->
-  <div class="mt-4 grid grid-cols-3 gap-2 md:gap-4">
-    <div class="rounded-[10px] md:rounded-xl border border-neutral-200 bg-white px-2.5 py-2.5 md:px-5 md:py-4">
-      <div class="flex items-center gap-1">
-        <svg width="11" height="11" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
-        <p class="text-[9px] md:text-[13px] font-medium text-neutral-500">Saldo cash</p>
+  <!-- total: lima kartu (desktop) -->
+  <div class="hidden md:grid grid-cols-5 gap-4 mt-4">
+    <div class="rounded-xl border border-neutral-200 bg-white px-5 py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+        <p class="text-[13px] font-medium text-neutral-500">Saldo cash</p>
       </div>
-      <p id="saldoCash" class="text-[13px] md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
-      <p class="hidden md:block text-xs text-neutral-400 mt-0.5">Dompet tunai</p>
+      <p class="rwCash text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
     </div>
-    <div class="rounded-[10px] md:rounded-xl border border-neutral-200 bg-white px-2.5 py-2.5 md:px-5 md:py-4">
-      <div class="flex items-center gap-1">
-        <svg width="11" height="11" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
-        <p class="text-[9px] md:text-[13px] font-medium text-neutral-500">Saldo virtual</p>
+    <div class="rounded-xl border border-neutral-200 bg-white px-5 py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+        <p class="text-[13px] font-medium text-neutral-500">Saldo virtual</p>
       </div>
-      <p id="saldoVirtual" class="text-[13px] md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
-      <p class="hidden md:block text-xs text-neutral-400 mt-0.5">Rekening &amp; e-wallet</p>
+      <p class="rwVirtual text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
     </div>
-    <div class="rounded-[10px] md:rounded-xl border border-neutral-200 bg-white px-2.5 py-2.5 md:px-5 md:py-4">
-      <div class="flex items-center gap-1">
-        <svg width="11" height="11" class="md:w-[15px] md:h-[15px]" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7V4H6l6 8-6 8h12v-3"/></svg>
-        <p class="text-[9px] md:text-[13px] font-medium text-neutral-500">Total saldo</p>
+    <div class="rounded-xl border border-neutral-200 bg-white px-5 py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7V4H6l6 8-6 8h12v-3"/></svg>
+        <p class="text-[13px] font-medium text-neutral-500">Total saldo</p>
       </div>
-      <p id="saldoTotal" class="text-[13px] md:text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
-      <p class="hidden md:block text-xs text-neutral-400 mt-0.5">Gabungan cash + virtual</p>
+      <p class="rwTotal text-2xl font-bold text-neutral-950 mt-1">Rp 0</p>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white px-5 py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7 7 7-7"/></svg>
+        <p class="text-[13px] font-medium text-neutral-500">Pengeluaran</p>
+      </div>
+      <p class="rwKeluar text-2xl font-bold text-red-700 mt-1">Rp 0</p>
+    </div>
+    <div class="rounded-xl border border-neutral-200 bg-white px-5 py-4">
+      <div class="flex items-center gap-1.5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7-7-7 7"/></svg>
+        <p class="text-[13px] font-medium text-neutral-500">Pemasukan</p>
+      </div>
+      <p class="rwMasuk text-2xl font-bold text-green-700 mt-1">Rp 0</p>
+    </div>
+  </div>
+
+  <!-- total: strip digeser ke samping (mobile) -->
+  <div class="md:hidden mt-4 rounded-xl border border-neutral-200 bg-white px-1 py-2.5 overflow-x-auto">
+    <div class="flex items-center min-w-[580px]">
+      <div class="shrink-0 basis-[112px] text-center">
+        <p class="text-[10px] text-neutral-400">Saldo cash</p>
+        <p class="rwCash text-[13px] font-semibold text-neutral-700">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] bg-neutral-200 shrink-0"></div>
+      <div class="shrink-0 basis-[112px] text-center">
+        <p class="text-[10px] text-neutral-400">Saldo virtual</p>
+        <p class="rwVirtual text-[13px] font-semibold text-neutral-700">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] bg-neutral-200 shrink-0"></div>
+      <div class="shrink-0 basis-[112px] text-center">
+        <p class="text-[10px] text-neutral-400">Total saldo</p>
+        <p class="rwTotal text-[13px] font-bold text-neutral-950">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] bg-neutral-200 shrink-0"></div>
+      <div class="shrink-0 basis-[112px] text-center">
+        <p class="text-[10px] text-neutral-400">Pengeluaran</p>
+        <p class="rwKeluar text-[13px] font-semibold text-red-700">Rp 0</p>
+      </div>
+      <div class="w-px h-[26px] bg-neutral-200 shrink-0"></div>
+      <div class="shrink-0 basis-[112px] text-center">
+        <p class="text-[10px] text-neutral-400">Pemasukan</p>
+        <p class="rwMasuk text-[13px] font-semibold text-green-700">Rp 0</p>
+      </div>
     </div>
   </div>
 
@@ -532,14 +596,24 @@ let saldoAwal = {}, tabunganAwal = {}
 
 function infoPeriode(k) {
   const kini = new Date(), awal = new Date(kini.getFullYear(), kini.getMonth(), kini.getDate())
+  const akhir = new Date(kini.getTime() + 1000)
   switch (k) {
-    case 'hari':    return { mulai:awal, langkah:JAM, format:d=>String(d.getHours()).padStart(2,'0')+':00', sumbu:'per jam' }
-    case '7hari':   return { mulai:new Date(awal.getTime()-6*HARI), langkah:4*JAM, format:d=>d.getDate()+'/'+(d.getMonth()+1)+' '+String(d.getHours()).padStart(2,'0')+':00', sumbu:'per 4 jam' }
-    case 'bulan':   return { mulai:new Date(kini.getFullYear(),kini.getMonth(),1), langkah:HARI, format:d=>String(d.getDate()), sumbu:'per hari' }
-    case '30hari':  return { mulai:new Date(awal.getTime()-29*HARI), langkah:HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per hari' }
-    case '90hari':  return { mulai:new Date(awal.getTime()-89*HARI), langkah:2*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per 2 hari' }
-    case 'tahun':   return { mulai:new Date(kini.getFullYear(),0,1), langkah:7*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per minggu' }
-    case 'setahun': return { mulai:new Date(awal.getTime()-364*HARI), langkah:7*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per minggu' }
+    case 'hari':    return { mulai:awal, selesai:akhir, langkah:JAM, format:d=>String(d.getHours()).padStart(2,'0')+':00', sumbu:'per jam' }
+    case '7hari':   return { mulai:new Date(awal.getTime()-6*HARI), selesai:akhir, langkah:4*JAM, format:d=>d.getDate()+'/'+(d.getMonth()+1)+' '+String(d.getHours()).padStart(2,'0')+':00', sumbu:'per 4 jam' }
+    case 'bulan':   return { mulai:new Date(kini.getFullYear(),kini.getMonth(),1), selesai:akhir, langkah:HARI, format:d=>String(d.getDate()), sumbu:'per hari' }
+    case '30hari':  return { mulai:new Date(awal.getTime()-29*HARI), selesai:akhir, langkah:HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per hari' }
+    case '90hari':  return { mulai:new Date(awal.getTime()-89*HARI), selesai:akhir, langkah:2*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per 2 hari' }
+    case 'tahun':   return { mulai:new Date(kini.getFullYear(),0,1), selesai:akhir, langkah:7*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per minggu' }
+    case 'setahun': return { mulai:new Date(awal.getTime()-364*HARI), selesai:akhir, langkah:7*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per minggu' }
+    case 'custom': {
+      if (!ovTahun) return infoPeriode('30hari')
+      if (ovBulan) return {
+        mulai:new Date(ovTahun, ovBulan-1, 1), selesai:new Date(ovTahun, ovBulan, 1),
+        langkah:HARI, format:d=>String(d.getDate()), sumbu:'per hari' }
+      return {
+        mulai:new Date(ovTahun, 0, 1), selesai:new Date(ovTahun+1, 0, 1),
+        langkah:7*HARI, format:d=>d.getDate()+'/'+(d.getMonth()+1), sumbu:'per minggu' }
+    }
   }
 }
 
@@ -602,11 +676,23 @@ async function muatOverview() {
     barisOverview = await ambilSemua(() => {
       let q = supabase.from('transaction_ledger')
         .select('id,occurred_at,user_id,user_nama,nama_transaksi,category,channel,method,debit,credit,is_active')
-        .eq('is_active', true).gte('occurred_at', p.mulai.toISOString())
+        .eq('is_active', true)
+        .gte('occurred_at', p.mulai.toISOString())
+        .lt('occurred_at', p.selesai.toISOString())
       if (users) q = q.in('user_id', users)
       return q.order('occurred_at', { ascending: true })
     })
   } catch (e) { alert('Gagal memuat data: ' + e.message); return }
+
+  // Pengeluaran & pemasukan adalah aliran, jadi mengikuti rentang waktu terpilih —
+  // berbeda dari tiga kolom sebelumnya yang merupakan posisi kumulatif.
+  let totalKeluar = 0, totalMasuk = 0
+  barisOverview.forEach(r => {
+    if (hitungSebagaiKeluar(r)) totalKeluar += Number(r.debit) || 0
+    if (hitungSebagaiMasuk(r))  totalMasuk  += Number(r.credit) || 0
+  })
+  document.getElementById('kPengeluaran').textContent = 'Rp ' + rupiah(totalKeluar)
+  document.getElementById('kPemasukan').textContent   = 'Rp ' + rupiah(totalMasuk)
 
   gambarGrafik(p)
   gambarHighlight(barisOverview)
@@ -614,8 +700,8 @@ async function muatOverview() {
 }
 
 function gambarGrafik(p) {
-  const sekarang = Date.now(), label = [], awalBucket = []
-  for (let t = p.mulai.getTime(); t <= sekarang; t += p.langkah) { awalBucket.push(t); label.push(p.format(new Date(t))) }
+  const batas = Math.min(Date.now(), p.selesai.getTime()), label = [], awalBucket = []
+  for (let t = p.mulai.getTime(); t <= batas; t += p.langkah) { awalBucket.push(t); label.push(p.format(new Date(t))) }
   const n = awalBucket.length
   const total = new Array(n).fill(0)
 
@@ -753,7 +839,54 @@ async function gambarTabelPengguna() {
   }).join('')
 }
 
-document.getElementById('periode').onchange = muatOverview
+// ---- Rentang waktu Custom di Overview ----
+// Aturannya sama dengan filter di Riwayat: bulan tidak bisa dipilih tanpa tahun,
+// dan hanya periode yang benar-benar punya data yang muncul.
+let ovTahun = null, ovBulan = null
+
+function isiTahunOverview() {
+  const tahun = [...new Set(periodeAda.map(p => p.tahun))].sort((a,b) => b-a)
+  document.getElementById('ovTahun').innerHTML =
+    '<option value="">Pilih tahun</option>' + tahun.map(t => '<option value="'+t+'">'+t+'</option>').join('')
+}
+function isiBulanOverview() {
+  const sel = document.getElementById('ovBulan')
+  if (!ovTahun) { sel.innerHTML = '<option value="">Bulan</option>'; sel.disabled = true; sel.value=''; return }
+  const bulan = periodeAda.filter(p => p.tahun === ovTahun).map(p => p.bulan).sort((a,b) => a-b)
+  sel.disabled = false
+  sel.innerHTML = '<option value="">Semua bulan</option>' +
+    bulan.map(b => '<option value="'+b+'">'+BULAN[b-1]+'</option>').join('')
+  sel.value = ovBulan || ''
+}
+function tampilkanKontrolCustom() {
+  const custom = document.getElementById('periode').value === 'custom'
+  document.getElementById('ovTahun').classList.toggle('hidden', !custom)
+  document.getElementById('ovBulan').classList.toggle('hidden', !custom)
+  const r = document.getElementById('ovReset')
+  r.classList.toggle('hidden', !custom)
+  r.classList.toggle('flex', custom)
+  document.getElementById('ovBulan').classList.toggle('border-neutral-900', custom && !!ovBulan)
+}
+document.getElementById('ovTahun').onchange = e => {
+  ovTahun = e.target.value ? parseInt(e.target.value,10) : null
+  ovBulan = null
+  isiBulanOverview(); tampilkanKontrolCustom(); muatOverview()
+}
+document.getElementById('ovBulan').onchange = e => {
+  ovBulan = e.target.value ? parseInt(e.target.value,10) : null
+  tampilkanKontrolCustom(); muatOverview()
+}
+document.getElementById('ovReset').onclick = () => {
+  ovTahun = null; ovBulan = null
+  document.getElementById('ovTahun').value = ''
+  document.getElementById('periode').value = '30hari'
+  isiBulanOverview(); tampilkanKontrolCustom(); muatOverview()
+}
+
+document.getElementById('periode').onchange = () => {
+  tampilkanKontrolCustom()
+  muatOverview()
+}
 
 // ==================== FILTER PERIODE ====================
 let periodeAda = [], fTahun = null, fBulan = null
@@ -806,11 +939,14 @@ async function muatRiwayat() {
   // Kartu saldo & saldo per pengguna hanya dipengaruhi periode + pilihan pengguna.
   const { data: saldo } = await supabase.rpc('saldo_periode', { p_tahun:fTahun, p_bulan:fBulan, p_users:users })
   const s = Array.isArray(saldo) ? saldo[0] : saldo
+  const isi = (kelas, nilai) =>
+    document.querySelectorAll('.' + kelas).forEach(el => { el.textContent = 'Rp ' + rupiah(nilai) })
   if (s) {
-    document.getElementById('saldoCash').textContent    = 'Rp ' + rupiah(s.saldo_cash)
-    document.getElementById('saldoVirtual').textContent = 'Rp ' + rupiah(s.saldo_virtual)
-    document.getElementById('saldoTotal').textContent   = 'Rp ' + rupiah(s.saldo_total)
+    isi('rwCash', s.saldo_cash); isi('rwVirtual', s.saldo_virtual); isi('rwTotal', s.saldo_total)
   }
+  const { data: arus } = await supabase.rpc('arus_periode', { p_tahun:fTahun, p_bulan:fBulan, p_users:users })
+  const a = Array.isArray(arus) ? arus[0] : arus
+  if (a) { isi('rwKeluar', a.pengeluaran); isi('rwMasuk', a.pemasukan) }
   // Saldo per pengguna sengaja menampilkan seluruh pengguna dan hanya mengikuti periode,
   // karena gunanya membandingkan antar orang.
   const { data: perUser } = await supabase.rpc('saldo_periode_user', { p_tahun:fTahun, p_bulan:fBulan, p_users:null })
@@ -1118,6 +1254,7 @@ buatFilterUser('btnUserOv','popUserOv','daftarUserOv','labelUserOv','badgeUserOv
 buatFilterUser('btnUserRw','popUserRw','daftarUserRw','labelUserRw','badgeUserRw', userRw, muatRiwayat)
 await muatPeriodeTersedia()
 isiBulan(); perbaruiTampilanPeriode()
+isiTahunOverview(); isiBulanOverview(); tampilkanKontrolCustom()
 await muatOverview()
 await muatRiwayat()
 </script>

@@ -119,6 +119,27 @@
       <p id="formErrorTeks" class="text-sm text-red-700"></p>
     </div>
 
+    <div class="mt-5 space-y-2">
+      <label class="block text-sm font-medium text-neutral-950">Foto profil</label>
+      <div class="flex items-center gap-3.5">
+        <div id="fotoPratinjau" class="w-[60px] h-[60px] md:w-[72px] md:h-[72px] shrink-0 rounded-full bg-neutral-200 flex items-center justify-center overflow-hidden">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="1.8" stroke-linecap="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap gap-2">
+            <button id="fotoPilih" class="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[13px] font-medium text-neutral-950">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 9 5-5 5 5"/><path d="M12 4v12"/></svg>
+              Unggah foto
+            </button>
+            <button id="fotoHapus" class="hidden rounded-lg border border-red-200 bg-white px-3 py-2 text-[13px] font-medium text-red-700">Hapus</button>
+          </div>
+          <p class="text-[11px] text-neutral-400 mt-2">JPG atau PNG. Otomatis dikecilkan ke 256 px sebelum diunggah.</p>
+        </div>
+      </div>
+      <input id="fotoBerkas" type="file" accept="image/*" class="hidden">
+    </div>
+    <div class="mt-5 h-px bg-neutral-200"></div>
+
     <div class="mt-5 grid md:grid-cols-2 gap-4">
       <div class="space-y-2">
         <label class="block text-sm font-medium text-neutral-950">Nama</label>
@@ -196,9 +217,30 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const profile = await requireDashboardAccess()
 if (!profile) throw new Error('tidak berhak')
 const bolehUbah = profile.role === 'superadmin' && profile.is_active
+// Admin tidak berhak mengubah data pengguna, tapi boleh mengganti fotonya sendiri.
+const bolehFoto = u => profile.is_active &&
+  (profile.role === 'superadmin' || (profile.role === 'admin' && u.id === profile.id))
+const bolehAksi = u => bolehUbah || bolehFoto(u)
 
-document.getElementById('avatar').textContent = initials(profile.nama)
-document.getElementById('avatarWrap').style.backgroundColor = profile.warna || '#F5F5F5'
+function gambarAvatarTopBar() {
+  const bungkus = document.getElementById('avatarWrap')
+  if (profile.foto) {
+    bungkus.style.backgroundColor = 'transparent'
+    bungkus.innerHTML = '<img src="'+profile.foto+'" alt="" class="w-9 h-9 rounded-full object-cover">'
+  } else {
+    bungkus.style.backgroundColor = profile.warna || '#F5F5F5'
+    bungkus.innerHTML = '<span class="text-[13px] font-semibold text-neutral-800">'+initials(profile.nama)+'</span>'
+  }
+}
+gambarAvatarTopBar()
+
+// Foto bila ada, kalau tidak inisial berlatar warna pengguna.
+function avatarHTML(u, ukuran) {
+  return u.foto
+    ? '<img src="'+u.foto+'" alt="" class="'+ukuran+' shrink-0 rounded-full object-cover">'
+    : '<span class="'+ukuran+' shrink-0 rounded-full inline-flex items-center justify-center '+
+      'text-[11px] font-semibold text-neutral-800" style="background:'+(u.warna||'#F5F5F5')+'">'+initials(u.nama)+'</span>'
+}
 document.getElementById('barNama').textContent = profile.nama
 document.getElementById('barRole').textContent = profile.role === 'superadmin' ? 'Superadmin' : 'Admin'
 if (bolehUbah) document.getElementById('tombolTambah').classList.replace('hidden','flex')
@@ -250,7 +292,7 @@ function gambar() {
       const mati = !u.is_active, sup = u.role === 'superadmin'
       return '<tr class="' + (mati ? 'bg-neutral-50' : 'bg-white') + ' border-b border-neutral-100 last:border-0">' +
         '<td class="px-4 py-3"><div class="flex items-center gap-2.5">' +
-          '<span class="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold text-neutral-800" style="background:'+(u.warna||'#F5F5F5')+'">'+initials(u.nama)+'</span>' +
+          avatarHTML(u, 'w-7 h-7') +
           '<span class="text-[13px] font-semibold ' + (mati?'text-neutral-400':'text-neutral-950') + '">'+u.nama+'</span></div></td>' +
         '<td class="px-4 py-3"><span class="block w-[34px] h-[18px] rounded-[5px]" style="background:'+(u.warna||'#E5E5E5')+'"></span></td>' +
         '<td class="px-4 py-3 text-[13px] ' + (u.email ? (mati?'text-neutral-400':'text-neutral-600') : 'text-neutral-300') + '">'+(u.email||'—')+'</td>' +
@@ -261,7 +303,7 @@ function gambar() {
         '<td class="px-4 py-3"><span class="rounded-md px-2 py-0.5 text-[11px] font-medium ' +
           (mati ? 'border border-red-200 bg-red-50 text-red-700' : 'bg-neutral-100 text-neutral-700') + '">'+(mati?'Nonaktif':'Aktif')+'</span></td>' +
         '<td class="px-4 py-3 text-right">' +
-          (bolehUbah ? '<button class="tombolAksi text-neutral-500 px-1" data-id="'+u.id+'">⋮</button>'
+          (bolehAksi(u) ? '<button class="tombolAksi text-neutral-500 px-1" data-id="'+u.id+'">⋮</button>'
                      : '<span class="text-[11px] text-neutral-300">read only</span>') + '</td></tr>'
     }).join('')
 
@@ -272,11 +314,11 @@ function gambar() {
       const mati = !u.is_active, sup = u.role === 'superadmin'
       return '<div class="rounded-[10px] border border-neutral-200 ' + (mati?'bg-neutral-50':'bg-white') + ' px-3.5 py-3">' +
         '<div class="flex items-center gap-2.5">' +
-          '<span class="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold text-neutral-800" style="background:'+(u.warna||'#F5F5F5')+'">'+initials(u.nama)+'</span>' +
+          avatarHTML(u, 'w-7 h-7') +
           '<div class="flex-1 min-w-0">' +
             '<p class="text-sm font-semibold ' + (mati?'text-neutral-400':'text-neutral-950') + ' truncate">'+u.nama+'</p>' +
             '<p class="text-xs text-neutral-500 truncate">'+(u.email||'—')+'</p></div>' +
-          (bolehUbah ? '<button class="tombolAksi text-neutral-500 px-1" data-id="'+u.id+'">⋮</button>' : '') +
+          (bolehAksi(u) ? '<button class="tombolAksi text-neutral-500 px-1" data-id="'+u.id+'">⋮</button>' : '') +
         '</div>' +
         '<div class="mt-2 flex flex-wrap items-center gap-1.5">' +
           '<span class="rounded-md bg-neutral-100 px-1.5 py-0.5 text-[11px] text-neutral-700">@'+u.username+'</span>' +
@@ -299,7 +341,10 @@ function bukaAksi(id) {
   const u = semuaUser.find(x => x.id === id)
   document.getElementById('aksiNama').textContent = u.nama + ' · @' + u.username
   document.getElementById('aksiNonaktif').textContent = u.is_active ? 'Nonaktifkan' : 'Aktifkan kembali'
-  document.getElementById('aksiReset').classList.toggle('hidden', !u.email)
+  document.getElementById('aksiReset').classList.toggle('hidden', !u.email || !bolehUbah)
+  ;['aksiNonaktif','aksiHapus'].forEach(id =>
+    document.getElementById(id).classList.toggle('hidden', !bolehUbah))
+  document.getElementById('aksiEdit').textContent = bolehUbah ? 'Edit data' : 'Ubah foto'
   modalAksi.classList.remove('hidden')
 }
 document.getElementById('aksiBatal').onclick = () => modalAksi.classList.add('hidden')
@@ -337,6 +382,73 @@ const fUsername = document.getElementById('fUsername'), fPassword = document.get
 const fRole = document.getElementById('fRole'), fStatus = document.getElementById('fStatus')
 const kotakError = document.getElementById('formError'), teksError = document.getElementById('formErrorTeks')
 
+
+// ================= FOTO PROFIL =================
+let berkasFoto = null      // berkas baru yang dipilih, belum diunggah
+let fotoSaatIni = null     // alamat foto yang tersimpan
+let fotoDihapus = false
+
+const pratinjau = document.getElementById('fotoPratinjau')
+const inputBerkas = document.getElementById('fotoBerkas')
+
+function gambarPratinjau(url) {
+  if (url) {
+    pratinjau.innerHTML = '<img src="'+url+'" alt="" class="w-full h-full object-cover">'
+  } else {
+    pratinjau.innerHTML = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" ' +
+      'stroke="#8A8A8A" stroke-width="1.8" stroke-linecap="round">' +
+      '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+  }
+  document.getElementById('fotoHapus').classList.toggle('hidden', !url)
+}
+
+// Foto kamera bisa 5 MB lebih. Dikecilkan dan dipotong persegi di HP
+// supaya yang terkirim sekitar 20 KB.
+async function kecilkanFoto(berkas, sisi = 256) {
+  const gambar = await createImageBitmap(berkas)
+  const sisiSumber = Math.min(gambar.width, gambar.height)
+  const x = (gambar.width - sisiSumber) / 2
+  const y = (gambar.height - sisiSumber) / 2
+  const kanvas = document.createElement('canvas')
+  kanvas.width = sisi; kanvas.height = sisi
+  kanvas.getContext('2d').drawImage(gambar, x, y, sisiSumber, sisiSumber, 0, 0, sisi, sisi)
+  return new Promise(res => kanvas.toBlob(res, 'image/jpeg', 0.85))
+}
+
+document.getElementById('fotoPilih').onclick = () => inputBerkas.click()
+inputBerkas.onchange = async e => {
+  const berkas = e.target.files[0]
+  if (!berkas) return
+  if (!berkas.type.startsWith('image/')) return gagal('Berkas harus berupa gambar.')
+  berkasFoto = await kecilkanFoto(berkas)
+  fotoDihapus = false
+  gambarPratinjau(URL.createObjectURL(berkasFoto))
+  inputBerkas.value = ''
+}
+document.getElementById('fotoHapus').onclick = () => {
+  berkasFoto = null; fotoDihapus = true
+  gambarPratinjau(null)
+}
+
+// Nama berkas tetap per pengguna, jadi foto lama langsung tertimpa.
+async function simpanFoto(idUser) {
+  const nama = idUser + '.jpg'
+  if (berkasFoto) {
+    const { error } = await supabase.storage.from('avatar')
+      .upload(nama, berkasFoto, { upsert: true, contentType: 'image/jpeg' })
+    if (error) throw new Error('Gagal mengunggah foto: ' + error.message)
+    const { data } = supabase.storage.from('avatar').getPublicUrl(nama)
+    // penanda waktu agar browser tidak menampilkan foto lama dari cache
+    const url = data.publicUrl + '?v=' + Date.now()
+    const { error: e2 } = await supabase.rpc('set_foto', { p_user: idUser, p_url: url })
+    if (e2) throw new Error('Gagal menyimpan foto: ' + e2.message)
+  } else if (fotoDihapus) {
+    await supabase.storage.from('avatar').remove([nama])
+    const { error } = await supabase.rpc('set_foto', { p_user: idUser, p_url: null })
+    if (error) throw new Error('Gagal menghapus foto: ' + error.message)
+  }
+}
+
 function bukaForm(mode) {
   modeForm = mode
   kotakError.classList.add('hidden')
@@ -346,7 +458,17 @@ function bukaForm(mode) {
   document.getElementById('formSub').textContent = mode === 'tambah'
     ? 'Buat akun baru dan tentukan rolenya.'
     : 'Password tidak bisa diubah di sini — gunakan tautan reset password.'
+  berkasFoto = null; fotoDihapus = false
+  const bolehSemua = bolehUbah
+  ;[fNama, fEmail, fUsername, fPassword, fRole, fStatus].forEach(el => {
+    el.disabled = !bolehSemua
+    el.classList.toggle('opacity-50', !bolehSemua)
+  })
+  document.getElementById('palet').classList.toggle('opacity-50', !bolehSemua)
+  document.getElementById('palet').style.pointerEvents = bolehSemua ? 'auto' : 'none'
+
   if (mode === 'tambah') {
+    fotoSaatIni = null; gambarPratinjau(null)
     fNama.value=''; fEmail.value=''; fUsername.value=''; fPassword.value=''
     fRole.value='pengguna_biasa'; fStatus.value='true'
     const terpakai = semuaUser.map(u => u.warna)
@@ -354,6 +476,7 @@ function bukaForm(mode) {
     warnaTerpilih = bebas ? bebas[1] : PALET[0][1]
   } else {
     const u = semuaUser.find(x => x.id === idAktif)
+    fotoSaatIni = u.foto || null; gambarPratinjau(fotoSaatIni)
     fNama.value=u.nama; fEmail.value=u.email||''; fUsername.value=u.username
     fRole.value=u.role; fStatus.value=String(u.is_active)
     warnaTerpilih = u.warna || PALET[0][1]
@@ -369,6 +492,19 @@ function gagal(p) { teksError.textContent = p; kotakError.classList.remove('hidd
 
 document.getElementById('formSimpan').onclick = async () => {
   kotakError.classList.add('hidden')
+
+  // Admin hanya berhak mengganti foto, bukan data pengguna.
+  if (!bolehUbah) {
+    const tombolF = document.getElementById('formSimpan')
+    tombolF.disabled = true; tombolF.textContent = 'Menyimpan…'
+    try { await simpanFoto(idAktif) }
+    catch (e) { return gagal(e.message) }
+    finally { tombolF.disabled = false; tombolF.textContent = 'Simpan' }
+    modalForm.classList.add('hidden')
+    await muat()
+    return
+  }
+
   const nama = fNama.value.trim(), email = fEmail.value.trim()
   const username = fUsername.value.trim().toLowerCase(), password = fPassword.value, role = fRole.value
 
@@ -393,6 +529,8 @@ document.getElementById('formSimpan').onclick = async () => {
         if (e2.code === '23505') return gagal('Username sudah dipakai user lain.')
         return gagal('Akun login terbuat, tapi profil gagal disimpan: ' + e2.message)
       }
+      // foto baru bisa diunggah setelah profilnya ada
+      try { await simpanFoto(data.user.id) } catch (e) { return gagal(e.message) }
     } else {
       const u = semuaUser.find(x => x.id === idAktif)
       const aktif = fStatus.value === 'true'
@@ -405,6 +543,7 @@ document.getElementById('formSimpan').onclick = async () => {
         if (error.code === '23505') return gagal('Username sudah dipakai user lain.')
         return gagal('Gagal menyimpan: ' + error.message)
       }
+      try { await simpanFoto(idAktif) } catch (e) { return gagal(e.message) }
     }
     modalForm.classList.add('hidden')
     await muat()

@@ -483,8 +483,14 @@ import { supabase, requireDashboardAccess, rupiah, initials } from './config.js'
 const profile = await requireDashboardAccess()
 if (!profile) throw new Error('tidak berhak')
 
-document.getElementById('avatar').textContent  = initials(profile.nama)
-document.getElementById('avatarWrap').style.backgroundColor = profile.warna || '#F5F5F5'
+const bungkusAvatar = document.getElementById('avatarWrap')
+if (profile.foto) {
+  bungkusAvatar.style.backgroundColor = 'transparent'
+  bungkusAvatar.innerHTML = '<img src="'+profile.foto+'" alt="" class="w-9 h-9 rounded-full object-cover">'
+} else {
+  bungkusAvatar.style.backgroundColor = profile.warna || '#F5F5F5'
+  bungkusAvatar.innerHTML = '<span class="text-[13px] font-semibold text-neutral-800">'+initials(profile.nama)+'</span>'
+}
 document.getElementById('barNama').textContent = profile.nama
 document.getElementById('barRole').textContent = profile.role === 'superadmin' ? 'Superadmin' : 'Admin'
 
@@ -522,9 +528,19 @@ async function ambilSemua(bangun) {
 }
 
 // ---------- daftar pengguna ----------
-const { data: semuaProfil } = await supabase.from('profiles').select('id, nama, warna').order('nama')
+const { data: semuaProfil } = await supabase.from('profiles').select('id, nama, warna, foto').order('nama')
 const PROFIL = semuaProfil || []
 const warnaUser = id => (PROFIL.find(p => p.id === id) || {}).warna || '#C4CBD6'
+const fotoUser  = id => (PROFIL.find(p => p.id === id) || {}).foto || null
+
+// Foto bila ada, kalau tidak inisial berlatar warna pengguna.
+function avatarHTML(id, nama, ukuran) {
+  const f = fotoUser(id)
+  return f
+    ? '<img src="'+f+'" alt="" class="'+ukuran+' shrink-0 rounded-full object-cover">'
+    : '<span class="'+ukuran+' shrink-0 rounded-full inline-flex items-center justify-center '+
+      'text-[11px] font-semibold text-neutral-800" style="background:'+warnaUser(id)+'">'+initials(nama)+'</span>'
+}
 
 // ---------- tab ----------
 document.querySelectorAll('.tabBtn').forEach(b => b.onclick = () => {
@@ -998,7 +1014,7 @@ function gambarSaldoUser() {
     : saldoUser.map(u =>
       '<div class="flex items-center border-b border-neutral-100 last:border-0 px-4 py-3">' +
         '<div class="flex-1 flex items-center gap-2.5">' +
-          '<span class="w-7 h-7 shrink-0 rounded-full inline-flex items-center justify-center text-[11px] font-semibold text-neutral-800" style="background:'+(u.warna||'#F5F5F5')+'">'+initials(u.nama)+'</span>' +
+          avatarHTML(u.user_id, u.nama, 'w-7 h-7') +
           '<span class="text-[13px] font-semibold text-neutral-950">'+u.nama+'</span></div>' +
         '<span class="w-[150px] text-right text-[13px] text-neutral-600">Rp '+rupiah(u.saldo_cash)+'</span>' +
         '<span class="w-[150px] text-right text-[13px] text-neutral-600">Rp '+rupiah(u.saldo_virtual)+'</span>' +

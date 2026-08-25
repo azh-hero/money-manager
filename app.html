@@ -264,7 +264,14 @@ import { supabase, requireLogin, logout, rupiah, initials } from './config.js'
 const profile = await requireLogin()
 if (!profile) throw new Error('belum login')
 
-document.getElementById('avatar').textContent  = initials(profile.nama)
+const bungkusAvatar = document.getElementById('avatar').parentElement
+if (profile.foto) {
+  bungkusAvatar.style.backgroundColor = 'transparent'
+  bungkusAvatar.innerHTML = '<img src="'+profile.foto+'" alt="" class="w-9 h-9 rounded-full object-cover">'
+} else {
+  bungkusAvatar.style.backgroundColor = profile.warna || '#F5F5F5'
+  document.getElementById('avatar').textContent = initials(profile.nama)
+}
 document.getElementById('barNama').textContent = profile.nama
 document.getElementById('barRole').textContent =
   profile.role === 'superadmin' ? 'Superadmin' : profile.role === 'admin' ? 'Admin' : 'Pengguna biasa'

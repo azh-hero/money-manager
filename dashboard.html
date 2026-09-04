@@ -635,29 +635,34 @@ function infoPeriode(k) {
 // ---- Aturan tampilan grafik Overview (tidak menyentuh perhitungan di database) ----
 // Tarik tunai & setor tunai  : hanya memindah uang antar dompet sendiri, tidak dihitung.
 // Pindah aset (transfer)     : tetap dihitung, karena pengirim & penerima orang berbeda.
-// Menabung                   : di bawah Rp 1 juta masuk Pengeluaran; Rp 1 juta ke atas
+// Menabung                   : sampai Rp 1 juta masih terhitung pengeluaran; di atas itu
 //                              hanya muncul di Arus besar agar tidak dihitung dua kali.
 const PEMINDAHAN_KAS = ['tarik_tunai', 'setor_tunai']
-const menabungBesar = r => r.category === 'menabung' && (Number(r.debit) || 0) >= BATAS_BESAR
+const menabungBesar = r => r.category === 'menabung' && (Number(r.debit) || 0) > BATAS_BESAR
 const hitungSebagaiKeluar = r =>
   Number(r.debit) > 0 && !PEMINDAHAN_KAS.includes(r.category) && !menabungBesar(r)
 const hitungSebagaiMasuk = r =>
   Number(r.credit) > 0 && !PEMINDAHAN_KAS.includes(r.category)
 
-// Arus besar hanya melihat uang yang benar-benar keluar dalam jumlah besar:
-// Expenses, Capex, dan Menabung. Income, ROI, ambil tabungan, serta tarik/setor tunai
-// tidak dihitung. Untuk transaksi berpasangan hanya sisi pengurangan yang diambil,
-// sehingga satu perpindahan tidak terhitung dua kali.
+// Pemisahan berdasarkan besaran hanya berlaku di grafik:
+// tab Pengeluaran menampung transaksi sampai Rp 1 juta, selebihnya pindah ke Arus besar.
+// Tanpa pemisahan ini satu pengeluaran raksasa membuat batang lain rata tak terbaca.
+// Kartu highlight dan tabel per pengguna tidak ikut dibatasi, karena di sana justru
+// nilai terbesar dan total sesungguhnya yang dicari.
 const KATEGORI_ARUS_BESAR = ['expenses', 'capex', 'menabung']
-function nilaiArusBesar(r) {
+const nilaiPengeluaran = r => {
+  const d = Number(r.debit) || 0
+  return (hitungSebagaiKeluar(r) && d <= BATAS_BESAR) ? d : 0
+}
+const nilaiArusBesar = r => {
   if (!KATEGORI_ARUS_BESAR.includes(r.category)) return 0
   const d = Number(r.debit) || 0
-  return d >= BATAS_BESAR ? d : 0
+  return d > BATAS_BESAR ? d : 0
 }
 
 function nilaiMetrik(r, metrik) {
   const d = Number(r.debit) || 0, c = Number(r.credit) || 0
-  if (metrik === 'pengeluaran') return hitungSebagaiKeluar(r) ? d : 0
+  if (metrik === 'pengeluaran') return nilaiPengeluaran(r)
   if (metrik === 'pemasukan')   return hitungSebagaiMasuk(r) ? c : 0
   if (metrik === 'besar')       return nilaiArusBesar(r)
   if (metrik === 'tabungan')    return r.category === 'menabung' ? d : (r.category === 'ambil_tabungan' ? -c : 0)

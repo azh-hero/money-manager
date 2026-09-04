@@ -259,9 +259,11 @@
 </main>
 
 <script type="module">
+import { majuSplash, tutupSplash } from './splash.js'
 import { supabase, requireLogin, logout, rupiah, initials } from './config.js'
 import { avatarHTML } from './avatars.js'
 
+majuSplash(55, 'Memeriksa sesi login')
 const profile = await requireLogin()
 if (!profile) throw new Error('belum login')
 
@@ -275,6 +277,7 @@ if (profile.role === 'admin' || profile.role === 'superadmin') {
   document.getElementById('menuDashboard').classList.remove('hidden')
   document.getElementById('menuUsers').classList.remove('hidden')
 }
+tutupSplash()
 
 // ---------- Menu ----------
 const overlay = document.getElementById('overlay'), drawer = document.getElementById('drawer')

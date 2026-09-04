@@ -478,9 +478,11 @@
 </div>
 
 <script type="module">
+import { majuSplash, tutupSplash } from './splash.js'
 import { supabase, requireDashboardAccess, rupiah, initials } from './config.js'
 import { avatarHTML } from './avatars.js'
 
+majuSplash(45, 'Memeriksa sesi login')
 const profile = await requireDashboardAccess()
 if (!profile) throw new Error('tidak berhak')
 
@@ -1239,7 +1241,8 @@ document.getElementById('txSimpan').onclick = async () => {
     return gagal('Gagal menyimpan: ' + error.message)
   }
   modalTx.classList.add('hidden')
-  await muatPeriodeTersedia(); isiBulan()
+  majuSplash(70, 'Mengambil data')
+await muatPeriodeTersedia(); isiBulan()
   segarkan()
 }
 
@@ -1278,7 +1281,9 @@ await muatPeriodeTersedia()
 isiBulan(); perbaruiTampilanPeriode()
 isiTahunOverview(); isiBulanOverview(); tampilkanKontrolCustom()
 await muatOverview()
+majuSplash(90, 'Menyusun tampilan')
 await muatRiwayat()
+tutupSplash()
 </script>
 
 </body>

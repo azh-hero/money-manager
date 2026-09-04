@@ -223,10 +223,12 @@
 </div>
 
 <script type="module">
+import { majuSplash, tutupSplash } from './splash.js'
 import { supabase, requireDashboardAccess, initials, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js'
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 import { AVATAR, NAMA_AVATAR, avatarHTML } from './avatars.js'
 
+majuSplash(50, 'Memeriksa sesi login')
 const profile = await requireDashboardAccess()
 if (!profile) throw new Error('tidak berhak')
 const bolehUbah = profile.role === 'superadmin' && profile.is_active
@@ -271,9 +273,10 @@ function gambarPalet() {
 
 async function muat() {
   const { data, error } = await supabase.from('profiles').select('*').order('nama')
-  if (error) { alert('Gagal memuat: ' + error.message); return }
+  if (error) { alert('Gagal memuat: ' + error.message); tutupSplash(); return }
   semuaUser = data || []
   gambar()
+  tutupSplash()
 }
 function tersaring() {
   const kata = document.getElementById('cari').value.trim().toLowerCase()
@@ -602,6 +605,7 @@ document.getElementById('formSimpan').onclick = async () => {
 }
 
 gambarPalet()
+majuSplash(75, 'Mengambil daftar pengguna')
 muat()
 </script>
 

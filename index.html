@@ -85,7 +85,8 @@
   </div>
 
 <script type="module">
-  import { supabase, deviceLabel } from './config.js'
+  import { majuSplash, tutupSplash } from './splash.js'
+import { supabase, deviceLabel } from './config.js'
 
   const inputIdentitas = document.getElementById('identitas')
   const inputPassword  = document.getElementById('password')
@@ -94,9 +95,11 @@
   const kotakError     = document.getElementById('pesanError')
   const teksError      = document.getElementById('pesanErrorTeks')
 
+  majuSplash(55, 'Memeriksa sesi login')
   // Kalau sudah login, langsung masuk
   const { data: { session } } = await supabase.auth.getSession()
-  if (session) window.location.replace('app.html')
+  if (session) { majuSplash(100, 'Mengalihkan'); window.location.replace('app.html') }
+  else tutupSplash()
 
   function tampilkanError(pesan) {
     teksError.textContent = pesan

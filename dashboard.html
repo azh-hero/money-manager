@@ -373,7 +373,10 @@
       </table>
     </div>
     <div class="bg-neutral-50 border-t border-neutral-200 px-4 py-3">
-      <p id="infoJumlah" class="text-xs text-neutral-500">…</p>
+      <div class="flex flex-col md:flex-row md:items-center gap-2.5 md:gap-4">
+        <p id="infoJumlah" class="flex-1 text-center md:text-left text-[11px] md:text-xs text-neutral-500">…</p>
+        <nav id="pager" aria-label="Halaman" class="flex items-center justify-center gap-1.5"></nav>
+      </div>
     </div>
   </div>
 </section>
@@ -946,14 +949,15 @@ function perbaruiTampilanPeriode() {
     : 'Seluruh pencatatan pemasukan dan pengeluaran.'
 }
 document.getElementById('fTahun').onchange = e => {
-  fTahun = e.target.value ? parseInt(e.target.value,10) : null; fBulan = null
+  fTahun = e.target.value ? parseInt(e.target.value,10) : null; fBulan = null; halamanAktif = 1
   isiBulan(); perbaruiTampilanPeriode(); muatRiwayat()
 }
 document.getElementById('fBulan').onchange = e => {
-  fBulan = e.target.value ? parseInt(e.target.value,10) : null
+  fBulan = e.target.value ? parseInt(e.target.value,10) : null; halamanAktif = 1
   perbaruiTampilanPeriode(); muatRiwayat()
 }
 document.getElementById('resetPeriode').onclick = () => {
+  halamanAktif = 1
   fTahun = null; fBulan = null; document.getElementById('fTahun').value = ''
   isiBulan(); perbaruiTampilanPeriode(); muatRiwayat()
 }
@@ -961,6 +965,7 @@ document.getElementById('resetPeriode').onclick = () => {
 // ==================== RIWAYAT ====================
 let sortKolom = 'occurred_at', sortNaik = false
 let barisSaatIni = [], saldoUser = [], userAktif = 0
+let halamanAktif = 1, totalBaris = 0
 
 async function muatRiwayat() {
   const users = semuaTerpilih(userRw) ? null : arr(userRw)
@@ -982,27 +987,95 @@ async function muatRiwayat() {
   saldoUser = perUser || []
   gambarSaldoUser()
 
-  const batas = parseInt(document.getElementById('jumlahTampil').value, 10)
-  const fk = document.getElementById('filterKategori').value
-  const fj = document.getElementById('filterJenis').value
+  const perHalaman = parseInt(document.getElementById('jumlahTampil').value, 10)
 
   // Saldo cash & virtual di tabel adalah saldo berjalan, jadi harus dihitung ulang
   // di database mengikuti pengguna yang dipilih — tidak bisa disaring di sisi browser.
-  const { data, error } = await supabase.rpc('riwayat', {
-    p_users: users,
-    p_tahun: fTahun,
-    p_bulan: fBulan,
-    p_kategori: fk || null,
-    p_channel: fj || null,
-    p_sort: sortKolom,
-    p_asc: sortNaik,
-    p_limit: batas
-  })
+  const { data, error } = await supabase.rpc('riwayat', Object.assign(parameterRiwayat(), {
+    p_limit: perHalaman,
+    p_offset: (halamanAktif - 1) * perHalaman
+  }))
   if (error) { alert('Gagal memuat data: ' + error.message); return }
   barisSaatIni = data || []
+  totalBaris = barisSaatIni.length ? Number(barisSaatIni[0].total_baris) : 0
+
+  // Bila filter mempersempit data sampai halaman ini kosong, mundur ke halaman terakhir.
+  const totalHalaman = Math.max(1, Math.ceil(totalBaris / perHalaman))
+  if (halamanAktif > totalHalaman && totalBaris > 0) { halamanAktif = totalHalaman; return muatRiwayat() }
+
   gambarTabel()
-  document.getElementById('infoJumlah').textContent =
-    'Menampilkan ' + barisSaatIni.length + ' transaksi (maksimal ' + batas + ')'
+  gambarPager(perHalaman, totalHalaman)
+}
+
+// Parameter penyaring yang sama dipakai tabel dan unduhan, supaya isinya selalu sama.
+function parameterRiwayat() {
+  const fk = document.getElementById('filterKategori').value
+  const fj = document.getElementById('filterJenis').value
+  return {
+    p_users: semuaTerpilih(userRw) ? null : arr(userRw),
+    p_tahun: fTahun, p_bulan: fBulan,
+    p_kategori: fk || null, p_channel: fj || null,
+    p_sort: sortKolom, p_asc: sortNaik
+  }
+}
+
+// Halaman pertama, terakhir, dan yang berdekatan dengan halaman aktif; sisanya titik-titik.
+function nomorHalaman(aktif, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pilih = new Set([1, total, aktif - 1, aktif, aktif + 1])
+  if (aktif <= 3) { pilih.add(2); pilih.add(3) }
+  if (aktif >= total - 2) { pilih.add(total - 1); pilih.add(total - 2) }
+  const urut = [...pilih].filter(n => n >= 1 && n <= total).sort((a, b) => a - b)
+  const hasil = []
+  urut.forEach((n, i) => {
+    if (i > 0 && n - urut[i - 1] > 1) hasil.push('…')
+    hasil.push(n)
+  })
+  return hasil
+}
+
+function gambarPager(perHalaman, totalHalaman) {
+  const awal = totalBaris === 0 ? 0 : (halamanAktif - 1) * perHalaman + 1
+  const akhir = Math.min(halamanAktif * perHalaman, totalBaris)
+  document.getElementById('infoJumlah').innerHTML = totalBaris === 0
+    ? 'Tidak ada transaksi'
+    : 'Menampilkan <span class="font-semibold text-neutral-950">' + rupiah(awal) + '–' + rupiah(akhir) +
+      '</span> dari <span class="font-semibold text-neutral-950">' + rupiah(totalBaris) + '</span> transaksi'
+
+  const nav = document.getElementById('pager')
+  if (totalHalaman <= 1) { nav.innerHTML = ''; return }
+
+  const kotak = 'h-9 md:h-[34px] rounded-lg text-[13px] font-medium flex items-center justify-center'
+  const panah = (arah, ke, redup) =>
+    '<button data-ke="' + ke + '" ' + (redup ? 'disabled ' : '') +
+    'aria-label="' + (arah === 'kiri' ? 'Halaman sebelumnya' : 'Halaman berikutnya') + '" ' +
+    'class="halBtn ' + kotak + ' w-9 md:w-auto md:px-3 gap-1 border border-neutral-200 bg-white text-neutral-950 ' +
+    (redup ? 'opacity-40 cursor-not-allowed' : 'hover:bg-neutral-50') + '">' +
+    (arah === 'kiri' ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>' +
+      '<span class="hidden md:inline">Sebelumnya</span>'
+      : '<span class="hidden md:inline">Berikutnya</span>' +
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>') +
+    '</button>'
+
+  nav.innerHTML =
+    panah('kiri', halamanAktif - 1, halamanAktif === 1) +
+    nomorHalaman(halamanAktif, totalHalaman).map(n => n === '…'
+      ? '<span class="w-6 md:w-7 text-center text-[13px] text-neutral-500">…</span>'
+      : '<button data-ke="' + n + '" ' + (n === halamanAktif ? 'aria-current="page" ' : '') +
+        'class="halBtn ' + kotak + ' w-9 md:w-[34px] ' +
+        (n === halamanAktif ? 'bg-neutral-900 text-neutral-50 font-semibold'
+                            : 'border border-neutral-200 bg-white text-neutral-950 hover:bg-neutral-50') +
+        '">' + n + '</button>').join('') +
+    panah('kanan', halamanAktif + 1, halamanAktif === totalHalaman)
+
+  nav.querySelectorAll('.halBtn').forEach(b => b.onclick = () => {
+    if (b.disabled) return
+    const ke = parseInt(b.dataset.ke, 10)
+    if (ke === halamanAktif) return
+    halamanAktif = ke
+    muatRiwayat()
+    document.getElementById('tbodyTabel').closest('.rounded-xl').scrollIntoView({ behavior:'smooth', block:'start' })
+  })
 }
 
 function gambarSaldoUser() {
@@ -1070,13 +1143,14 @@ function gambarTabel() {
 document.querySelectorAll('.sortBtn').forEach(b => b.onclick = () => {
   const k = b.dataset.kolom
   if (sortKolom === k) sortNaik = !sortNaik; else { sortKolom = k; sortNaik = false }
+  halamanAktif = 1
   muatRiwayat()
 })
 document.getElementById('sortMobile').onchange = e => {
-  const [k, naik] = e.target.value.split('|'); sortKolom = k; sortNaik = naik === 'true'; muatRiwayat()
+  const [k, naik] = e.target.value.split('|'); sortKolom = k; sortNaik = naik === 'true'; halamanAktif = 1; muatRiwayat()
 }
 ;['filterKategori','filterJenis','jumlahTampil'].forEach(id =>
-  document.getElementById(id).onchange = muatRiwayat)
+  document.getElementById(id).onchange = () => { halamanAktif = 1; muatRiwayat() })
 
 // ---------- modal aksi ----------
 let idAktif = null
@@ -1254,34 +1328,61 @@ await muatPeriodeTersedia(); isiBulan()
 async function segarkan() { await muatRiwayat(); await muatOverview() }
 
 // ---------- export ----------
-const dataExport = () => barisSaatIni.map(r => ({
+// Unduhan berisi SELURUH hasil saringan, bukan hanya halaman yang sedang tampil.
+// Diambil per 1000 baris; dibatasi 20.000 agar peramban tidak kehabisan memori.
+async function ambilSemuaRiwayat() {
+  const semua = [], ukuran = 1000
+  for (let hal = 0; hal < 20; hal++) {
+    const { data, error } = await supabase.rpc('riwayat', Object.assign(parameterRiwayat(), {
+      p_limit: ukuran, p_offset: hal * ukuran
+    }))
+    if (error) throw error
+    semua.push(...(data || []))
+    if (!data || data.length < ukuran) break
+  }
+  return semua
+}
+const keBaris = r => ({
   'Tanggal & Waktu': tanggalTampil(r.occurred_at), 'User': r.user_nama,
   'Nama transaksi': r.nama_transaksi, 'Kategori': LABEL_KATEGORI[r.category],
   'Debit': Number(r.debit)||0, 'Kredit': Number(r.credit)||0,
   'Saldo cash': Number(r.saldo_cash)||0, 'Saldo virtual': Number(r.saldo_virtual)||0,
   'Jenis transaksi': jenisTampil(r), 'Status': r.is_active ? 'Aktif' : 'Nonaktif'
-}))
+})
 const namaBerkas = ext => 'riwayat-transaksi' +
   (fTahun ? '-' + fTahun + (fBulan ? '-' + String(fBulan).padStart(2,'0') : '') : '') + '.' + ext
-document.getElementById('exportCsv').onclick = () => {
-  const rows = dataExport()
-  if (!rows.length) return alert('Tidak ada data untuk diunduh.')
-  const kolom = Object.keys(rows[0])
-  const isi = [kolom.join(',')].concat(rows.map(r => kolom.map(k => '"'+String(r[k]).replace(/"/g,'""')+'"').join(','))).join('\n')
-  const blob = new Blob(['\uFEFF'+isi], { type:'text/csv;charset=utf-8;' })
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = namaBerkas('csv'); a.click()
+
+async function unduh(jenis, tombol) {
+  const label = tombol.innerHTML
+  tombol.disabled = true
+  tombol.innerHTML = '<span class="text-[13px]">Menyiapkan…</span>'
+  try {
+    const rows = (await ambilSemuaRiwayat()).map(keBaris)
+    if (!rows.length) return alert('Tidak ada data untuk diunduh.')
+    if (jenis === 'csv') {
+      const kolom = Object.keys(rows[0])
+      const isi = [kolom.join(',')].concat(rows.map(r =>
+        kolom.map(k => '"'+String(r[k]).replace(/"/g,'""')+'"').join(','))).join('\n')
+      const blob = new Blob(['\uFEFF'+isi], { type:'text/csv;charset=utf-8;' })
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = namaBerkas('csv'); a.click()
+    } else {
+      const ws = XLSX.utils.json_to_sheet(rows), wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Riwayat')
+      XLSX.writeFile(wb, namaBerkas('xlsx'))
+    }
+  } catch (e) {
+    alert('Gagal mengunduh: ' + e.message)
+  } finally {
+    tombol.disabled = false; tombol.innerHTML = label
+  }
 }
-document.getElementById('exportXlsx').onclick = () => {
-  const rows = dataExport()
-  if (!rows.length) return alert('Tidak ada data untuk diunduh.')
-  const ws = XLSX.utils.json_to_sheet(rows), wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Riwayat')
-  XLSX.writeFile(wb, namaBerkas('xlsx'))
-}
+document.getElementById('exportCsv').onclick  = e => unduh('csv',  e.currentTarget)
+document.getElementById('exportXlsx').onclick = e => unduh('xlsx', e.currentTarget)
 
 // ---------- jalankan ----------
 buatFilterUser('btnUserOv','popUserOv','daftarUserOv','labelUserOv','badgeUserOv', userOv, muatOverview)
-buatFilterUser('btnUserRw','popUserRw','daftarUserRw','labelUserRw','badgeUserRw', userRw, muatRiwayat)
+buatFilterUser('btnUserRw','popUserRw','daftarUserRw','labelUserRw','badgeUserRw', userRw,
+  () => { halamanAktif = 1; muatRiwayat() })
 await muatPeriodeTersedia()
 isiBulan(); perbaruiTampilanPeriode()
 isiTahunOverview(); isiBulanOverview(); tampilkanKontrolCustom()
